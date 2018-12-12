@@ -1,13 +1,26 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
+    <p v-if="seen">now you see me. Seen = {{seen}}</p>
+    <li v-for="todo in todos" :key="todo.text">
+      {{ todo.text }}
+    </li>
     <router-view/>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  data () {
+    return {
+      seen: true,
+      todos: [
+        {text: 'dizhu'},
+        {text: 'colby'},
+        {text: 'chrisTOPHER'}
+      ]
+    }
+  }
 }
 </script>
 
@@ -20,4 +33,5 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+
 </style>
