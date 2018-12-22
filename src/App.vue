@@ -1,23 +1,21 @@
 <template>
   <div id="app">
     <router-view></router-view>
-    <login-form></login-form>
-    <register-form :v-for="item in sites" v-bind:todo="item"></register-form>
   </div>
 </template>
 
 <script>
-import LoginForm from '@/components/LoginForm'
-import registerForm from '@/components/registerForm'
+import Login from '@/components/Login'
+import Register from '@/components/Register'
 // import Vue from "@/main"
 // const imgFolder = "/static/"
 
 export default {
-  name: "App",
+  name: 'App',
 
   components: {
-    LoginForm,
-    registerForm
+    Login,
+    Register
   },
 
   data () {
@@ -28,31 +26,28 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+*{
+  color:rgb(51, 194, 51);
+  font-family: Verdana, sans-serif;
 }
 
 body {
   background-color: lightblue;
-  font-family: Verdana, sans-serif;
 }
 
-h1 {
-  background-color: rgb(141, 218, 141);
+form{
+  margin-bottom: 100px;
+  margin-left: 300px;
 }
 
-p {
-  background-color: yellow;
-}
-
-.color{
-  font-size: large;
-  color: red;
+.container {
+  border-style: dotted;
+  width: 600px;
+  padding-top: 20px;
+  padding-left: 30px;
+  padding-bottom: 30px;
+  border: 2px solid grey;
+  margin: 50px;
 }
 
 </style>
