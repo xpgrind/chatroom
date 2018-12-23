@@ -4,9 +4,9 @@
          <img src="/static/1.jpg" width="200px" height="180px">
         <h1>{{title}}</h1>
         <label for="inputEmail" >Email:</label><br>
-        <input type="email" id="inputEmail" placeholder="email add" required autocomplete="on" autofocus>
+        <input type="email" id="inputEmail" placeholder="...@..com" required autocomplete="on" autofocus>
         <br><br><label for="inputPassword" >Password:</label>
-        <br><input type="password" id="inputPassword" placeholder="password" required autofocus>
+        <br><input type="password" id="inputPassword" placeholder="pwd" required autofocus>
         <input type="checkbox" style = "font-size: 12px" value="remember-me"> remember me
          &nbsp; &nbsp; <a href="" style="color:blue">Forget Password?</a>
          <br><br>

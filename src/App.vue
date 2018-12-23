@@ -27,7 +27,7 @@ export default {
 
 <style>
 *{
-  color:rgb(51, 194, 51);
+  color:rgb(28, 160, 28);
   font-family: Verdana, sans-serif;
 }
 
@@ -39,9 +39,14 @@ form{
   margin-bottom: 100px;
   margin-left: 300px;
 }
+ a:hover{
+  background-color: yellow;
+  text-decoration: underline;
+ }
 
 .container {
   border-style: dotted;
+  background-color: aliceblue;
   width: 600px;
   padding-top: 20px;
   padding-left: 30px;
