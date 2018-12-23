@@ -5,21 +5,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 
-
-def get_db_secrets():
-    root_dir = os.path.dirname(os.path.dirname(__file__))
-    secrets_file = os.path.join(root_dir, 'secrets.json')
-    with open(secrets_file) as f:
-        secrets = json.load(f)
-
-    secrets['database_uri'] = "postgresql://{username}:{password}@{host}/{database}".format(
-        username=secrets['username'],
-        password=secrets['password'],
-        host=secrets['host'],
-        database=secrets['database']
-    )
-    return secrets
-
+from chatroom.db.config import get_db_secrets
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -1,3 +1,11 @@
+psql -h localhost -U postgres -d chatroom
+
 CREATE DATABASE chatroom WITH OWNER = 'postgres' ENCODING = 'UTF8';
 
-psql -h localhost -U postgres -d chatroom
+pip install --editable chatlib
+
+To create all of the tables:
+alembic upgrade head
+
+To delete all the tables:
+alembic downgrade base
