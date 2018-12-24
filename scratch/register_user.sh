@@ -3,11 +3,11 @@ set -euo pipefail
 
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"post data example":"test"}' \
-  "http://localhost:5000/users/register?username=topher&description=sillycat"
+  --data '{"username":"topher"}' \
+  "http://localhost:5000/users/register"
 
 
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"post data example":"test"}' \
-  "http://localhost:5000/users/remove?username=topher"
+  --data '{"username":"topher"}' \
+  "http://localhost:5000/users/remove"

@@ -7,6 +7,7 @@
 <script>
 import Login from '@/components/Login'
 import Register from '@/components/Register'
+import store from "@/store/index"
 // import Vue from "@/main"
 // const imgFolder = "/static/"
 

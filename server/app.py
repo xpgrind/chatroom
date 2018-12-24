@@ -1,9 +1,14 @@
 from chatroom.db.session import get_session
 from chatroom.db.tables import Account
 
-from flask import Flask, jsonify, request
+import flask
+from flask import Flask, jsonify
+from flask_socketio import SocketIO, join_room, emit
+
 from sqlalchemy.exc import IntegrityError
 app = Flask(__name__)
+socketio = SocketIO(app)
+
 
 
 class RequestError(Exception):
@@ -29,45 +34,99 @@ def handle_invalid_usage(error):
     return response
 
 
+@app.route('/login', methods=["POST"])
+def login(command):
+    print("Login Attempt")
+    json_data = flask.request.json
+    username = json_data.get('username')
+    password = json_data.get('password')
+    if password != "password":
+        raise RequestError("Invalid password")
+
+    return jsonify({
+        "username": username,
+        "token": "insecure_token",
+    })
+
+
 @app.route('/users/<command>', methods=["POST"])
 def users(command):
     # This is how you get data from the post request body
-    json_data = request.json
+    json_data = flask.request.json
+
     # This is how you get data from the arguments
-    args = request.args
+    args = flask.request.args
 
     print("Command: {}, Args: {}, Params: {}".format(command, args, json_data))
     if not command in {"register", "list", "remove"}:
         raise RequestError("Invalid command: {}".format(command))
 
-    session = get_session()
+    db_session = get_session()
 
     if command == "register":
+        username = json_data.get('username')
+        if username is None:
+            raise RequestError("Username is null!")
         try:
             new_user = Account(
-                username=args.get('username'),
+                username=username,
                 description="a silly cat"
             )
-            session.add(new_user)
-            session.commit()
+            db_session.add(new_user)
+            db_session.commit()
         except IntegrityError:
-            raise RequestError("Username already exists: {}".format(args.get('username')))
+            raise RequestError("Username already exists: {}".format(username))
 
     elif command == "list":
         from pprint import pprint; import pdb; pdb.set_trace()
         raise NotImplementedError()
     elif command == "remove":
-        user = session.query(Account).filter_by(username=args.get('username')).first()
+        username = json_data.get('username')
+        if username is None:
+            raise RequestError("Username is null!")
+        user = db_session.query(Account).filter_by(username=username).first()
         if user is None:
-            raise RequestError("Username does not exist: {}".format(args.get('username')))
+            raise RequestError("Username does not exist: {}".format(username))
 
-        session.delete(user)
-        session.commit()
+        db_session.delete(user)
+        db_session.commit()
 
     return jsonify({
-        "message": "Success"
+        "message": "Command: {}, Success".format(command)
     })
 
 
+@socketio.on('connect')
+def handler__connect():
+    print('connect: enter')
+    print('cookies:', flask.request.cookies)
+    cookies = {k.strip('; '): v for k, v in (flask.request.cookies or {}).items()}
+    token = cookies.get('token')
+    if token:
+        # TODO: Validate login token!
+        print('connect: ACCEPT')
+        emit('connect_info', {
+            'token': token,
+            'sid': flask.request.sid,
+        })
+        return True
+    else:
+        print('connect: REJECT <no token>')
+        return False
+
+
+@socketio.on('disconnect')
+def handler__disconnect():
+    print('disconnect: enter')
+    sid = getattr(flask.request, 'sid', None)
+    token = flask.session.get('token')
+    user_uuid = flask.session.get('user_uuid')
+    print('sid', (sid or '<NO SID>'))
+    print('token', (token or '<NO TOKEN>'))
+    print('user_uuid', (user_uuid or '<NO USER_UUID>'))
+    print('disconnect: done')
+
+
 if __name__ == '__main__':
-    app.run()
+    # app.run()
+    socketio.run(app, debug=True)
