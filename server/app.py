@@ -2,24 +2,27 @@ from chatroom.db.session import get_session
 from chatroom.db.tables import Account
 
 import flask
+from flask_cors import CORS
 from flask import Flask, jsonify
 from flask_socketio import SocketIO, join_room, emit
 
 from sqlalchemy.exc import IntegrityError
 app = Flask(__name__)
+client_address = "http://localhost:8080"
+cors = CORS(app)
 socketio = SocketIO(app)
-
 
 
 class RequestError(Exception):
     status_code = 400
 
-    def __init__(self, message, status_code=None, payload=None):
+    def __init__(self, message, status_code=None, payload=None, headers=None):
         Exception.__init__(self)
         self.message = message
         if status_code is not None:
             self.status_code = status_code
         self.payload = payload
+        self.headers = headers
 
     def to_dict(self):
         rv = dict(self.payload or ())
@@ -31,22 +34,47 @@ class RequestError(Exception):
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
+    if error.headers is not None:
+        h = response.headers
+        for k, v in error.headers.items():
+            h[k] = v
     return response
 
 
-@app.route('/login', methods=["POST"])
-def login(command):
-    print("Login Attempt")
-    json_data = flask.request.json
-    username = json_data.get('username')
-    password = json_data.get('password')
-    if password != "password":
-        raise RequestError("Invalid password")
+@app.route('/login', methods=["OPTIONS", "POST"])
+def login():
+    raw_methods = ["OPTIONS", "POST"]
+    string_methods = ', '.join(sorted(x.upper() for x in raw_methods))
+    string_headers = ', '.join(x.upper() for x in ['Content-type'])
+    option_headers = {
+        'Access-Control-Allow-Origin': client_address,
+        'Access-Control-Allow-Methods': string_methods,
+        'Access-Control-Allow-Headers': string_headers,
+        'Access-Control-Allow-Credentials': 'true',
+    }
 
-    return jsonify({
-        "username": username,
-        "token": "insecure_token",
-    })
+    if flask.request.method == 'OPTIONS':
+        print("Getting OPTIONS")
+        response = flask.current_app.make_default_options_response()
+
+    elif flask.request.method == 'POST':
+        print("Login Attempt")
+        json_data = flask.request.json
+        username = json_data.get('username')
+        password = json_data.get('password')
+        if password != "password":
+            raise RequestError("Invalid password", headers=option_headers)
+
+        response = flask.jsonify({
+                "username": username,
+                "token": "insecure_token",
+        })
+
+    h = response.headers
+    for k, v in option_headers.items():
+        h[k] = v
+
+    return response
 
 
 @app.route('/users/<command>', methods=["POST"])

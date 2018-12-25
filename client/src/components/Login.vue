@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import {socket} from "@/api/socket"
+// import {socket} from "@/api/socket"
 
 import { Logger } from "@/common"
 const logger = Logger.get("Login")
@@ -41,7 +41,7 @@ export default {
         password: this.password,
       }).then(() => {
         this.message = "ok!"
-        socket.connect()
+        // socket.connect()
         this.$router.push({ path: this.redirect })
       }, (err) => {
         this.message = "failed: " + err.error
