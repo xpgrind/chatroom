@@ -1,16 +1,15 @@
 import Vue from "vue"
 import axios from "axios"
-import {API_URL} from "../api/socket"
-// socket
-
+import {API_URL, socket} from "@/api/socket"
 import { Logger } from "@/common"
+
 const logger = Logger.get("actions.js")
 
 export default {
   testCommand({ commit }, { command, username }) {
     const requestBody = {username}
     console.log("Sending request to the server", command, requestBody)
-    // socket.emit("users/" + command, requestBody)
+    socket.emit("users/" + command, requestBody)
   },
 
   socketConnected({ commit }, { connected }) {
@@ -43,7 +42,7 @@ export default {
   },
 
   clearLogin({ commit }) {
-    // socket.disconnect()
+    socket.disconnect()
     Vue.cookie.delete("token")
     commit("clearLogin")
   },
