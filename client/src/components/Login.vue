@@ -11,15 +11,15 @@
          &nbsp; &nbsp; <a href="" style="color:blue">Forget Password?</a>
          <br><br>
         <button class="btn btn-lg btn-primary btn-block" @click="login" type="submit">Login</button>
+        {{ message }}
         &nbsp;&nbsp;<router-link to="/"><a>Home Page</a></router-link>
       </form>
     </div>
 </template>
 
 <script>
-import {socket} from "@/api/socket"
-
 import { Logger } from "@/common"
+
 const logger = Logger.get("Login")
 
 export default {
@@ -31,17 +31,17 @@ export default {
       username: null,
       password: null,
       redirect: prevQuery.redirect ? prevQuery.redirect : "/chat",
+      message: "No login attempted yet!",
     }
   },
   methods: {
     login() {
       logger.log("Logging in...")
-      this.$store.dispatch("attemptLogin", {
+      this.$store.dispatch("attemptLogin", { // Dispatch attemptLogin to actions.js
         username: this.username,
         password: this.password,
       }).then(() => {
         this.message = "ok!"
-        socket.connect()
         this.$router.push({ path: this.redirect })
       }, (err) => {
         this.message = "failed: " + err.error

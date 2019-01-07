@@ -1,0 +1,75 @@
+Client / Server
+Client = Vue Program
+Server = Python Flask Program
+
+Application Server Routes
+/login
+  User sends: username, password
+  Server returns
+    {"success": True, "token": "some token here that the server generates and saves"}
+    {"success": False}
+
+/list-friends
+  Required cookie: username, token
+  Server Returns:
+  {
+    "success": True,
+    "friends": [
+      {
+        "username": X,
+        "name": X,
+        "status": X,
+        "icon": X,
+      },
+      {
+        "username": X,
+        "name": X,
+        "status": X,
+        "icon": X,
+      }
+    ]
+  }
+
+/send-message
+  Required cookie: username, token
+  Client sends:
+  {
+    "message": X,
+    "chatroom": X,
+    "time": X,
+  }
+
+  Server Returns:
+  {
+    "success": True / False,
+    "error": "bad username" or "authentication failed" or "invalid message" or "unknown recipient"
+  }
+
+/get-messages
+  Required cookie: username, token
+  Client sends:
+  {
+    "chatroom": X,
+    "get_latest_messages" True
+  }
+  or
+  {
+    "chatroom": X,
+    "after_message_number": X,
+  }
+
+  Server Returns:
+  {
+    "success": True / False,
+    if success == False
+    "error": "authentication failed" or "bad username" or "unknown chatroom" or "bad request"
+    if success == True
+    "messages": [
+      {
+        "username": X,
+        "message": X,
+        "time": X,
+        "message_number": X,
+      }
+    ]
+  }

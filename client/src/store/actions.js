@@ -1,22 +1,13 @@
 import Vue from "vue"
 import axios from "axios"
-import {API_URL, socket} from "@/api/socket"
+import {API_URL} from "@/api/server"
 import { Logger } from "@/common"
 
 const logger = Logger.get("actions.js")
 
 export default {
-  testCommand({ commit }, { command, username }) {
-    const requestBody = {username}
-    console.log("Sending request to the server", command, requestBody)
-    socket.emit("users/" + command, requestBody)
-  },
-
-  socketConnected({ commit }, { connected }) {
-    commit("setConnected", { connected })
-  },
-
   attemptLogin({ commit }, { username, password }) {
+    logger.debug("Logging in with username", username, "password", password)
     const url = API_URL + "/login"
     return new Promise((resolve, reject) => {
       axios
@@ -25,24 +16,40 @@ export default {
           return response.data
         })
         .then(json => {
-          commit("setLogin", {
-            token: json.token,
-            info: {
-              username: json.info.username,
-            },
-          })
+          logger.debug("Successfully logged in")
+          commit("setLogin", { username, token: json.token }) // commit goes to mutations.js
           resolve()
         })
         .catch(error => {
+          logger.warn("Login Failed", error)
           commit("clearLogin")
-          logger.warn("Failed to log in ", error)
+          reject(error.response.data)
+        })
+    })
+  },
+
+  loadFriendList({ state, commit }) {
+    const url = API_URL + "/friends"
+    return new Promise((resolve, reject) => {
+      axios
+        .post(url, { username: state.username, token: state.token })
+        .then(
+          (response) => { return response.data },
+          (error) => { console.log("Error!", error) },
+        )
+        .then(json => {
+          logger.debug("loadFriendList succeeded")
+          commit("setFriendList", {friends: json.friends})
+          resolve()
+        })
+        .catch(error => {
+          logger.warn("loadFriendList failed", error)
           reject(error.response.data)
         })
     })
   },
 
   clearLogin({ commit }) {
-    socket.disconnect()
     Vue.cookie.delete("token")
     commit("clearLogin")
   },

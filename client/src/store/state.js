@@ -1,5 +1,7 @@
 // tslint:disable:max-line-length
 
 export default {
-  socketConnected: false
+  username: window.localStorage.getItem("chatroom_username") || null,
+  token: window.localStorage.getItem("chatroom_token") || null,
+  friends: null,
 }

@@ -1,23 +1,32 @@
 import Vue from "vue"
+import { Logger } from "@/common"
+
+const logger = Logger.get("mutations.js")
 
 export default {
-  setConnected(state, { connected }) {
-    state.socketConnected = connected
-  },
-
-  setLogin(state, { token, info }) {
-    state.loginSession.token = token
-    state.loginSession.info = info
-    if (window.localStorage && token) {
-      window.localStorage.setItem('token', token)
+  setLogin(state, { username, token }) {
+    logger.debug("Set Username:", username, "token", token)
+    state.username = username
+    state.token = token
+    if (window.localStorage) {
+      window.localStorage.setItem("chatroom_username", username)
+      window.localStorage.setItem("chatroom_token", token)
     }
   },
 
   clearLogin(state) {
-    state.loginSession.token = null
-    state.loginSession.info = null
+    logger.debug("Clear Username")
+    state.username = null
+    state.token = null
+    state.friends = null
     if (window.localStorage) {
-      window.localStorage.removeItem("token")
+      window.localStorage.removeItem("chatroom_username")
+      window.localStorage.removeItem("chatroom_token")
     }
+  },
+
+  setFriendList(state, { friends }) {
+    logger.debug("Set Friends:", friends)
+    state.friends = friends
   },
 }
