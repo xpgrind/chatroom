@@ -41,6 +41,16 @@ export default {
         this.message = "failed: " + err
       })
     }
+  },
+  checkEmail() {
+    console.log("Email is " + this.email)
+    this.$store.dispatch("Email", {
+      newEmail: this.email,
+    }).then(() => {
+      this.message = "Email Available"
+    }, (err) => {
+      this.message = "failed: " + err
+    })
   }
 }
 </script>

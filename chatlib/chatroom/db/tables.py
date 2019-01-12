@@ -12,3 +12,4 @@ class Account(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(50), nullable=False, unique=True)
     description = Column(Unicode(200))
+    email = Column(String(50), nullable=False, unique=True)

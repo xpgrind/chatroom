@@ -78,5 +78,31 @@ export default {
           reject(error)
         })
     })
+  },
+
+  checkEmail({ state, commit }, { newEmail }) {
+    const url = API_URL + "/check_email"
+    return new Promise((resolve, reject) => {
+      axios
+        .post(url, { newEmail })
+        .then(
+          (response) => { return response.data },
+          (error) => { console.log("Error!", error) },
+        )
+        .then(json => {
+          if (!json) {
+            reject(new Error("No reply from server"))
+          }
+          if (json.available) {
+            resolve()
+          } else {
+            reject(new Error("Email not available"))
+          }
+        })
+        .catch(error => {
+          logger.warn("check email failed", error)
+          reject(error)
+        })
+    })
   }
 }
