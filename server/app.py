@@ -121,6 +121,37 @@ def friends():
     return response
 
 
+@app.route('/check_username', methods=["OPTIONS", "POST"])
+def check_username():
+    if flask.request.method == 'OPTIONS':
+        print("Getting OPTIONS")
+        response = create_options_response()
+
+    elif flask.request.method == 'POST':
+        print("Checking username")
+        json_data = flask.request.json
+        print("Data: {}".format(json_data))
+        new_username = json_data.get('newUsername')
+
+        db_session = get_session()
+        found_user = db_session.query(Account).filter_by(username=new_username).first()
+        if found_user is None:
+            response = create_response(data={
+                "success": True,
+                "available": True,
+            })
+            print("Username is available")
+        else:
+            response = create_response(
+                data={
+                    "success": True,
+                    "available": False,
+                }
+            )
+            print("Username is not available")
+
+    return response
+
 
 if __name__ == '__main__':
     app.run(debug=True)

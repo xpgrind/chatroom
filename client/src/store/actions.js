@@ -53,4 +53,30 @@ export default {
     Vue.cookie.delete("token")
     commit("clearLogin")
   },
+
+  checkUsername({ state, commit }, { newUsername }) {
+    const url = API_URL + "/check_username"
+    return new Promise((resolve, reject) => {
+      axios
+        .post(url, { newUsername })
+        .then(
+          (response) => { return response.data },
+          (error) => { console.log("Error!", error) },
+        )
+        .then(json => {
+          if (!json) {
+            reject(new Error("No reply from server"))
+          }
+          if (json.available) {
+            resolve()
+          } else {
+            reject(new Error("Username not available"))
+          }
+        })
+        .catch(error => {
+          logger.warn("check username failed", error)
+          reject(error)
+        })
+    })
+  }
 }
