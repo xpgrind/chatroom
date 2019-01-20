@@ -206,16 +206,16 @@ def register_submit():
         score = password_check['score']
         suggestions = ''
         for feedback_type, feedback in password_check['feedback'].items():
-            suggestions += '{} {}'.format(feedback_type, ' '.join(feedback))
+            if feedback:
+                suggestions += '{} {}'.format(feedback_type, ' '.join(feedback))
 
         if score < 3 or suggestions:
-            print("Too weak: {}".format(suggestions))
+            print("Too weak: Score `{}` Suggestions `{}`".format(score, suggestions))
             response = create_response(
                 data={
                     "success": False,
                     "message": "Password too weak. Suggestions: " + suggestions
-                },
-                status=200,  # 403 == Forbidden
+                }
             )
             return response
 
