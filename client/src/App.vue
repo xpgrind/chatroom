@@ -1,7 +1,7 @@
 <template>
-  <div id="app">
-    <router-view></router-view>
-  </div>
+    <div id="app">
+        <router-view></router-view>
+    </div>
 </template>
 
 <script>
@@ -12,17 +12,17 @@ import store from "@/store/index"
 // const imgFolder = "/static/"
 
 export default {
-  name: 'App',
+    name: 'App',
 
-  components: {
-    Login,
-    Register
-  },
+    components: {
+        Login,
+        Register,
+    },
 
-  data () {
-    return {
+    data () {
+        return {
+        }
     }
-  }
 }
 </script>
 

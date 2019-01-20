@@ -9,32 +9,32 @@ import TestDatabase from '@/components/TestDatabase'
 Vue.use(Router)
 
 export default new Router({
-  routes: [
-    {
-      path: '/login',
-      name: 'Login',
-      component: Login
-    },
-    {
-      path: '/chat',
-      name: 'Chat',
-      component: Chat
-    },
+    routes: [
+        {
+            path: '/login',
+            name: 'Login',
+            component: Login
+        },
+        {
+            path: '/chat',
+            name: 'Chat',
+            component: Chat
+        },
 
-    {
-      path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
-    },
-    {
-      path: '/register',
-      name: 'Register',
-      component: Register
-    },
-    {
-      path: '/test',
-      name: 'TestDatabase',
-      component: TestDatabase
-    }
-  ]
+        {
+            path: '/',
+            name: 'HelloWorld',
+            component: HelloWorld
+        },
+        {
+            path: '/register',
+            name: 'Register',
+            component: Register
+        },
+        {
+            path: '/test',
+            name: 'TestDatabase',
+            component: TestDatabase
+        },
+    ]
 })

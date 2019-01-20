@@ -153,8 +153,124 @@ def check_username():
     return response
 
 
+@app.route('/check_email', methods=["OPTIONS", "POST"])
+def check_email():
+    if flask.request.method == 'OPTIONS':
+        print("Getting OPTIONS")
+        response = create_options_response()
+
+    elif flask.request.method == 'POST':
+        print("Checking email")
+        json_data = flask.request.json
+        print("Data: {}".format(json_data))
+        new_email = json_data.get('newEmail')
+
+        db_session = get_session()
+        found_email = db_session.query(
+            Account).filter_by(email=new_email).first()
+        if found_email is None:
+            response = create_response(data={
+                "success": True,
+                "available": True,
+            })
+            print("Email address is available")
+        else:
+            response = create_response(
+                data={
+                    "success": True,
+                    "available": False,
+                }
+            )
+            print("Email address is being taken")
+
+    return response
+
+# @app.route('/register_submit', methods=["OPTIONS", "POST"])
+# def register_submit():
+#     if flask.request.method == 'OPTIONS':
+#         print("Getting OPTIONS")
+#         response = create_options_response()
+
+#     elif flask.request.method == 'POST':
+#         print("Register submit handling")
+#         json_data = flask.request.json
+#         print("Data: {}".format(json_data))
+
+#         new_email = json_data.get('newEmail')
+#         new_username = json_data.get('newUsername')
+#         new_password = json_data.get('newPassword')
+#         db_session = get_session()
+
+#         try:
+#             new_user = Account(
+#                 username=new_username,
+#                 password=new_password,
+#                 email=new_email
+#             )
+#             db_session.add(new_user)
+#             db_session.commit()
+
+#             response = create_response(data={
+#                 "success": True,
+#             })
+#             print("User Input is good")
+#             return response
+
+#         except IntegrityError:
+#             print("IntegrityError")
+
+#         # Handle Errors
+#         response = create_response(
+#             data={
+#                 "success": False,
+#             },
+#             status=400,  # 403 == Forbidden
+#         )
+
+#         found_email = db_session.query(
+#             Account).filter_by(email=new_email).first()
+#         found_name = db_session.query(
+#             Account).filter_by(username=new_username).first()
+
+#         if found_email is None and found_name is None and new_password is not None:
+#             response = create_response(data={
+#                 "success": True,
+#                 "available": True,
+#             })
+#             print("User Input is good")
+
+#         elif found_email is not None:
+#             response = create_response(
+#                 data={
+#                     "Email returns success": True,
+#                     "Email available": False,
+#                 }
+#             )
+#             print("Email address is being taken")
+
+#         elif found_name is not None:
+#             response = create_response(
+#                 data={
+#                     "username returns success": True,
+#                     "username available": False,
+#                 }
+#             )
+#             print("Username is being taken")
+
+#         else:
+#             response = create_response(
+#                 data={
+#                     "Email and username return success": True,
+#                     "Email and Username available": False,
+#                 }
+#             )
+#             print("Username and Email address are being taken")
+
+#         db_session.close()
+
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 # @app.route('/users/<command>', methods=["POST"])
