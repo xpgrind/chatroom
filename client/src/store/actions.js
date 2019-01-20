@@ -54,6 +54,32 @@ export default {
         commit("clearLogin")
     },
 
+    registerUser({ state, commit }, { newEmail, newUsername, newPassword }) {
+        const url = API_URL + "/register_submit"
+        return new Promise((resolve, reject) => {
+            axios
+                .post(url, { newEmail, newUsername, newPassword })
+                .then(
+                    (response) => { return response.data },
+                    (error) => { console.log("Error!", error) },
+                )
+                .then(json => {
+                    if (!json) {
+                        reject(new Error("No reply from server"))
+                    }
+                    if (json.available) {
+                        resolve()
+                    } else {
+                        reject(new Error("Registration failed"))
+                    }
+                })
+                .catch(error => {
+                    logger.warn("registration connection failed", error)
+                    reject(error)
+                })
+        })
+    }
+
     checkUsername({ state, commit }, { newUsername }) {
         const url = API_URL + "/check_username"
         return new Promise((resolve, reject) => {

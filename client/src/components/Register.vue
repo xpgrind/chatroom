@@ -1,6 +1,6 @@
 <template>
     <div id="register">
-        <form class="container">
+        <form class="container" @submit.prevent="registerUser">
             <img src="/static/2.jpg" width="190px" height="160px">
             <h1>{{title}}</h1>
             Name:<br>
@@ -13,6 +13,9 @@
             <input v-model="password" type="password" name="password" >
             <br><br>
             <button type="submit" value="Submit">Register</button>
+            <div>
+                Register Message: {{ registerStatus }}
+            </div>
             &nbsp;&nbsp;<router-link styel="text-align:center" to="/"><a>Home Page</a></router-link>
         </form>
     </div>
@@ -28,7 +31,8 @@ export default {
             email: '',
             password: '',
             message: '',
-            message2: ''
+            message2: '',
+            registerStatus: '',
         }
     },
     methods: {
@@ -50,6 +54,18 @@ export default {
                 this.message2 = "Email Available"
             }, (err) => {
                 this.message2 = "failed: " + err
+            })
+        },
+        registerUser() {
+            console.log("registerUser")
+            this.$store.dispatch("registerUser", {
+                newUsername: this.username,
+                newEmail: this.email,
+                newPassword: this.password,
+            }).then(() => {
+                this.registerStatus = "Register Success"
+            }, (err) => {
+                this.registerStatus = "Register Failure: " + err
             })
         }
     },
