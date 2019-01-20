@@ -1,15 +1,16 @@
 import json
 
+import flask
+from flask import Flask, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import IntegrityError
+from zxcvbn import zxcvbn
+
 from chatroom.db.session import get_session
 from chatroom.db.tables import Account
 
-import flask
-from flask import Flask, jsonify
 
-from sqlalchemy.exc import IntegrityError
 app = Flask(__name__)
-
-
 client_address = "http://localhost:8080"
 
 
@@ -200,13 +201,33 @@ def register_submit():
         new_email = json_data.get('newEmail')
         new_username = json_data.get('newUsername')
         new_password = json_data.get('newPassword')
+
+        password_check = zxcvbn(new_password, user_inputs=[new_email, new_username])
+        score = password_check['score']
+        suggestions = ''
+        for feedback_type, feedback in password_check['feedback'].items():
+            suggestions += '{} {}'.format(feedback_type, ' '.join(feedback))
+
+        if score < 3 or suggestions:
+            print("Too weak: {}".format(suggestions))
+            response = create_response(
+                data={
+                    "success": False,
+                    "message": "Password too weak. Suggestions: " + suggestions
+                },
+                status=200,  # 403 == Forbidden
+            )
+            return response
+
         db_session = get_session()
 
         try:
+            hash_method = 'pbkdf2:sha256:50000'
+            password_hash = generate_password_hash(new_password, method=hash_method, salt_length=8)
             new_user = Account(
                 username=new_username,
-                password=new_password,
-                email=new_email
+                password_hash=password_hash,
+                email=new_email,
             )
             db_session.add(new_user)
             db_session.commit()
@@ -215,59 +236,29 @@ def register_submit():
                 "success": True,
             })
             print("User Input is good")
+            db_session.close()
             return response
 
         except IntegrityError:
             print("IntegrityError")
 
-        # Handle Errors
-        response = create_response(
-            data={
-                "success": False,
-            },
-            status=400,  # 403 == Forbidden
-        )
 
-        found_email = db_session.query(
-            Account).filter_by(email=new_email).first()
-        found_name = db_session.query(
-            Account).filter_by(username=new_username).first()
+        error_messages = []
+        found_email = db_session.query(Account).filter_by(email=new_email).first()
+        if found_email:
+            error_messages.append("Email in use")
 
-        if found_email is None and found_name is None and new_password is not None:
-            response = create_response(data={
-                "success": True,
-                "available": True,
-            })
-            print("User Input is good")
+        found_name = db_session.query(Account).filter_by(username=new_username).first()
+        if found_name:
+            error_messages.append("Username in use")
 
-        elif found_email is not None:
-            response = create_response(
-                data={
-                    "Email returns success": True,
-                    "Email available": False,
-                }
-            )
-            print("Email address is being taken")
+        response = create_response(data={
+            "success": False,
+            "message": "Account creation failed: " + ",".join(error_messages),
+        })
 
-        elif found_name is not None:
-            response = create_response(
-                data={
-                    "username returns success": True,
-                    "username available": False,
-                }
-            )
-            print("Username is being taken")
 
-        else:
-            response = create_response(
-                data={
-                    "Email and username return success": True,
-                    "Email and Username available": False,
-                }
-            )
-            print("Username and Email address are being taken")
-
-        db_session.close()
+    return response
 
 
 if __name__ == '__main__':

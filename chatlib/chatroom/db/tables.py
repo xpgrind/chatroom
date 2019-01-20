@@ -11,5 +11,5 @@ class Account(Base):
     # Notice that each column is also a normal Python instance attribute.
     id = Column(Integer, primary_key=True)
     username = Column(String(50), nullable=False, unique=True)
-    description = Column(Unicode(200))
-    email = Column(String(50), nullable=False, unique=True)
+    password_hash = Column(String(128))
+    email = Column(String(80), nullable=False, unique=True)

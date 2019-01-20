@@ -60,15 +60,21 @@ export default {
             axios
                 .post(url, { newEmail, newUsername, newPassword })
                 .then(
-                    (response) => { return response.data },
-                    (error) => { console.log("Error!", error) },
+                    (response) => {
+                        console.log("Register Response: ", response)
+                        return response.data
+                    },
+                    (error) => {
+                        console.log("Register Error!", error)
+                    },
                 )
                 .then(json => {
                     if (!json) {
                         reject(new Error("No reply from server"))
                     }
                     if (json.available) {
-                        resolve()
+                        console.log("Register connection succeeded")
+                        resolve(json)
                     } else {
                         reject(new Error("Registration failed"))
                     }
@@ -78,7 +84,7 @@ export default {
                     reject(error)
                 })
         })
-    }
+    },
 
     checkUsername({ state, commit }, { newUsername }) {
         const url = API_URL + "/check_username"

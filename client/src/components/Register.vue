@@ -62,8 +62,8 @@ export default {
                 newUsername: this.username,
                 newEmail: this.email,
                 newPassword: this.password,
-            }).then(() => {
-                this.registerStatus = "Register Success"
+            }).then((json) => {
+                this.registerStatus = json
             }, (err) => {
                 this.registerStatus = "Register Failure: " + err
             })
