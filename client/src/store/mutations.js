@@ -29,4 +29,9 @@ export default {
         logger.debug("Set Friends:", friends)
         state.friends = friends
     },
+
+    clearFriendList(state, { friends }) {
+        logger.debug("Clear Friends")
+        state.friends = null
+    }
 }

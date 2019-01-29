@@ -1,6 +1,6 @@
 import Vue from "vue"
 import axios from "axios"
-import {API_URL} from "@/api/server"
+import { API_URL } from "@/api/server"
 import { Logger } from "@/common"
 
 const logger = Logger.get("actions.js")
@@ -39,7 +39,7 @@ export default {
                 )
                 .then(json => {
                     logger.debug("loadFriendList succeeded")
-                    commit("setFriendList", {friends: json.friends})
+                    commit("setFriendList", { friends: json.friends })
                     resolve()
                 })
                 .catch(error => {
@@ -68,19 +68,20 @@ export default {
                         console.log("Register Error!", error)
                     },
                 )
-                .then(json => {
-                    if (!json) {
-                        reject(new Error("No reply from server"))
-                    }
-                    if (json.available) {
-                        console.log("Register connection succeeded")
-                        resolve(json)
-                    } else {
-                        reject(new Error("Registration failed"))
-                    }
-                })
+                .then(
+                    json => {
+                        if (!json) {
+                            reject(new Error("No Reply from server"))
+                        }
+                        if (json.success) {
+                            console.log("Register connection succeeded")
+                            resolve()
+                        } else {
+                            reject(new Error(json.message))
+                        }
+                    })
                 .catch(error => {
-                    logger.warn("registration connection failed", error)
+                    logger.warn("Registration connection failed", error)
                     reject(error)
                 })
         })

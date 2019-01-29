@@ -56,6 +56,7 @@ def create_options_response(status=200):
 
 token_expiration = 10000
 
+
 @app.route('/login', methods=["OPTIONS", "POST"])
 def login():
     if flask.request.method == 'OPTIONS':
@@ -135,7 +136,9 @@ def check_username():
         new_username = json_data.get('newUsername')
 
         db_session = get_session()
-        found_user = db_session.query(Account).filter_by(username=new_username).first()
+        found_user = db_session.query(Account).filter_by(
+            username=new_username).first()
+
         if found_user is None:
             response = create_response(data={
                 "success": True,
@@ -145,9 +148,10 @@ def check_username():
         else:
             response = create_response(
                 data={
-                    "success": True,
+                    "success": False,
                     "available": False,
-                }
+                },
+                status=400
             )
             print("Username is not available")
 
@@ -169,6 +173,7 @@ def check_email():
         db_session = get_session()
         found_email = db_session.query(
             Account).filter_by(email=new_email).first()
+
         if found_email is None:
             response = create_response(data={
                 "success": True,
@@ -178,13 +183,26 @@ def check_email():
         else:
             response = create_response(
                 data={
-                    "success": True,
+                    "success": False,
                     "available": False,
                 }
             )
             print("Email address is being taken")
 
     return response
+
+
+def format_password_message(password_check):
+    message_tokens = []
+    if 'warning' in password_check:
+        warning_message = "Warning: {}".format(password_check['warning'])
+        message_tokens.append(warning_message)
+
+    if 'suggestions' in password_check:
+        suggestion_message = "Suggestions: " + ' '.join(password_check['suggestions'])
+        message_tokens.append(suggestion_message)
+
+    return ' '.join(message_tokens)
 
 
 @app.route('/register_submit', methods=["OPTIONS", "POST"])
@@ -202,19 +220,18 @@ def register_submit():
         new_username = json_data.get('newUsername')
         new_password = json_data.get('newPassword')
 
-        password_check = zxcvbn(new_password, user_inputs=[new_email, new_username])
+        password_check = zxcvbn(new_password, user_inputs=[
+                                new_email, new_username])
         score = password_check['score']
-        suggestions = ''
-        for feedback_type, feedback in password_check['feedback'].items():
-            if feedback:
-                suggestions += '{} {}'.format(feedback_type, ' '.join(feedback))
 
-        if score < 3 or suggestions:
-            print("Too weak: Score `{}` Suggestions `{}`".format(score, suggestions))
+        password_message = format_password_message(password_check)
+
+        if len(new_password) < 8 or password_check.get('warning'):
+            print("Too weak: Score `{}` password_message `{}`".format(score, password_message))
             response = create_response(
                 data={
                     "success": False,
-                    "message": "Password too weak. Suggestions: " + suggestions
+                    "message": "Password too weak. " + password_message
                 }
             )
             return response
@@ -229,41 +246,40 @@ def register_submit():
                 password_hash=password_hash,
                 email=new_email,
             )
+
+            print('Creating new user')
             db_session.add(new_user)
             db_session.commit()
+            print("Succeeded")
 
-            response = create_response(data={
-                "success": True,
-            })
-            print("User Input is good")
-            db_session.close()
-            return response
+
+            response = create_response(data={"success": True}, status=200)
 
         except IntegrityError:
+            db_session.rollback()
+
             print("IntegrityError")
+            error_messages = []
 
+            found_email = db_session.query(Account).filter_by(email=new_email).first()
+            if found_email:
+                error_messages.append("Email in use")
 
-        error_messages = []
-        found_email = db_session.query(Account).filter_by(email=new_email).first()
-        if found_email:
-            error_messages.append("Email in use")
+            found_name = db_session.query(Account).filter_by(username=new_username).first()
+            if found_name:
+                error_messages.append("Username in use")
 
-        found_name = db_session.query(Account).filter_by(username=new_username).first()
-        if found_name:
-            error_messages.append("Username in use")
+            response = create_response(data={
+                "success": False,
+                "message": "Account creation failed: " + ", ".join(error_messages)
+            })
 
-        response = create_response(data={
-            "success": False,
-            "message": "Account creation failed: " + ",".join(error_messages),
-        })
-
+        db_session.close()
 
     return response
 
-
 if __name__ == '__main__':
     app.run(debug=True)
-
 
 
 # @app.route('/users/<command>', methods=["POST"])

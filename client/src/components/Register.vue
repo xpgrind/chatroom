@@ -14,7 +14,7 @@
             <br><br>
             <button type="submit" value="Submit">Register</button>
             <div>
-                Register Message: {{ registerStatus }}
+            Register Message: {{ registerStatus }}
             </div>
             &nbsp;&nbsp;<router-link styel="text-align:center" to="/"><a>Home Page</a></router-link>
         </form>
@@ -61,11 +61,11 @@ export default {
             this.$store.dispatch("registerUser", {
                 newUsername: this.username,
                 newEmail: this.email,
-                newPassword: this.password,
-            }).then((json) => {
-                this.registerStatus = json
+                newPassword: this.password
+            }).then(() => {
+                this.registerStatus = "Register Succeeded"
             }, (err) => {
-                this.registerStatus = "Register Failure: " + err
+                this.registerStatus = "" + err
             })
         }
     },

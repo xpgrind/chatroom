@@ -6,7 +6,7 @@ import Chat from '@/components/Chat'
 import Register from '@/components/Register'
 import TestDatabase from '@/components/TestDatabase'
 
-Vue.use(Router)
+Vue.use(Router) // register router
 
 export default new Router({
     routes: [
