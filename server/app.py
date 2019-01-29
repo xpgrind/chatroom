@@ -150,8 +150,7 @@ def check_username():
                 data={
                     "success": False,
                     "available": False,
-                },
-                status=400
+                }
             )
             print("Username is not available")
 
