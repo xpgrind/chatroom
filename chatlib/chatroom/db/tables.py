@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Unicode
+from sqlalchemy import Column, ForeignKey, Integer, String, Unicode, VARCHAR, TIMESTAMP, TEXT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -10,6 +10,16 @@ class Account(Base):
     # Here we define columns for the table person
     # Notice that each column is also a normal Python instance attribute.
     id = Column(Integer, primary_key=True)
-    username = Column(String(50), nullable=False, unique=True)
-    password_hash = Column(String(128))
-    email = Column(String(80), nullable=False, unique=True)
+    username = Column(String(50), nullable=False)
+    password_hash = Column(String(128), nullable=False)
+    email = Column(String(80), nullable=False)
+
+class Token(Base):
+    __tablename__ = 'token'
+    # Here we define columns for the table person
+    # Notice that each column is also a normal Python instance attribute.
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, nullable=False)
+    token = Column(TEXT)
+    create_time = Column(TIMESTAMP, nullable=False)
+    expire_time = Column(TIMESTAMP, nullable=False)

@@ -4,23 +4,23 @@ import { Logger } from "@/common"
 const logger = Logger.get("mutations.js")
 
 export default {
-    setLogin(state, { username, token }) {
-        logger.debug("Set Username:", username, "token", token)
-        state.username = username
+    setLogin(state, { useremail, token }) {
+        logger.debug("Set Email:", useremail, "token", token)
+        state.email = useremail
         state.token = token
         if (window.localStorage) {
-            window.localStorage.setItem("chatroom_username", username)
+            window.localStorage.setItem("chatroom_email", useremail)
             window.localStorage.setItem("chatroom_token", token)
         }
     },
 
     clearLogin(state) {
         logger.debug("Clear Username")
-        state.username = null
+        state.email = null
         state.token = null
         state.friends = null
         if (window.localStorage) {
-            window.localStorage.removeItem("chatroom_username")
+            window.localStorage.removeItem("chatroom_email")
             window.localStorage.removeItem("chatroom_token")
         }
     },
@@ -30,8 +30,8 @@ export default {
         state.friends = friends
     },
 
-    clearFriendList(state, { friends }) {
+    clearFriendList(state) {
         logger.debug("Clear Friends")
         state.friends = null
-    }
+    },
 }

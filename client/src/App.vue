@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <h1 class="page-title"><a href="#/">Dizhu's Chatroom</a></h1>
+        <h1 class="page-title">Dizhu's Chatroom</h1>
         <router-view></router-view>
     </div>
 </template>

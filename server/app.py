@@ -8,7 +8,12 @@ from zxcvbn import zxcvbn
 
 from chatroom.db.session import get_session
 from chatroom.db.tables import Account
+from chatroom.db.tables import Token
 
+import secrets
+from datetime import datetime
+from datetime import timedelta
+import base64
 
 app = Flask(__name__)
 client_address = "http://localhost:8080"
@@ -30,7 +35,6 @@ def create_response(data, status=200):
     h = response.headers
     for k, v in headers.items():
         h[k] = v
-
     return response
 
 
@@ -50,12 +54,7 @@ def create_options_response(status=200):
     h = response.headers
     for k, v in headers.items():
         h[k] = v
-
     return response
-
-
-token_expiration = 10000
-
 
 @app.route('/login', methods=["OPTIONS", "POST"])
 def login():
@@ -67,25 +66,60 @@ def login():
         print("Login Attempt")
         json_data = flask.request.json
         print("Data: {}".format(json_data))
-        username = json_data.get('username')
+        useremail = json_data.get('email')
         password = json_data.get('password')
-        if username == "test@gmail.com" and password == "password":
-            token = 'sample_token'
-            response = create_response(data={
-                "success": True,
-                "token": token,
-            })
-            print("Login Succeeded")
+
+        db_session = get_session()
+        error_messages = []
+        found_email = db_session.query(Account).filter_by(email=useremail).first()
+
+        if found_email:
+            password_hash = db_session.query(Account).filter_by(email=useremail).first().password_hash
+            flag = check_password_hash(password_hash, password)
+            user_id = db_session.query(Account).filter_by(email=useremail).first().id
+
+            if flag:
+                create_time = datetime.utcnow()
+                token = secrets.token_bytes()
+                str_token = base64.b64encode(token).decode('utf-8')
+
+                new_token = Token(
+                    user_id=user_id,
+                    create_time=create_time,
+                    token=str_token,
+                    expire_time=create_time + timedelta(hours=24)
+                )
+
+                db_session.add(new_token)
+                db_session.commit()
+
+                response = create_response(
+                    data={ "success": True, "token": str_token},
+                    status=200
+                )
+                print("Login Succeeded")
+
+            else:
+                db_session.rollback()
+                token = ''
+                error_messages.append("Password is Wrong")
+                response = create_response(
+                    data={
+                        "success": False,
+                        "message": "Login failed: " + ", ".join(error_messages)
+                    }, status=403)  # 403 == Forbidden)
+                print("Password Failed")
 
         else:
-            token = ''
+            error_messages.append("User Email Not Found")
             response = create_response(
-                data={
-                    "success": False,
-                },
-                status=403, # 403 == Forbidden
-            )
-            print("Login Failed")
+                    data={
+                        "success": False,
+                        "message": "Login failed: " + ", ".join(error_messages)
+                    }, status=403)  # 403 == Forbidden)
+            print("Email not Found")
+
+        db_session.close()
 
     return response
 
@@ -104,21 +138,14 @@ def friends():
         token = json_data.get('token')
         print("token: {}".format(token))
 
-        if username == "test@gmail.com" and token == "sample_token":
-            response = create_response(data={
-                "success": True,
-                "friends": ["colby", "furby", "topher"]
-            })
-            print("Returning Friends")
-
-        else:
-            response = create_response(
-                data={
-                    "success": False
-                },
-                status=400, # 400: client error
-            )
-            print("Auth Failed")
+    else:
+        response = create_response(
+            data={
+                "success": False
+            },
+            status=400,  # 400: client error
+        )
+        print("Auth Failed")
 
     return response
 
@@ -157,6 +184,40 @@ def check_username():
     return response
 
 
+@app.route('/check_login_emil', methods=["OPTIONS", "POST"])
+def check_loginEmail():
+    if flask.request.method == 'OPTIONS':
+        print("Getting OPTIONS")
+        response = create_options_response()
+
+    elif flask.request.method == 'POST':
+        print("Checking Login user email")
+        json_data = flask.request.json
+        print("Data: {}".format(json_data))
+        new_email = json_data.get('newEmail')
+
+        db_session = get_session()
+        found_user = db_session.query(Account).filter_by(
+            email=new_email).first()
+
+        if found_user is None:
+            response = create_response(data={
+                "success": False,
+                "available": False,
+            })
+            print("User Email Not Found")
+        else:
+            response = create_response(
+                data={
+                    "success": True,
+                    "available": True,
+                }
+            )
+            print("User Email Found")
+
+    return response
+
+
 @app.route('/check_email', methods=["OPTIONS", "POST"])
 def check_email():
     if flask.request.method == 'OPTIONS':
@@ -190,7 +251,6 @@ def check_email():
 
     return response
 
-
 def format_password_message(password_check):
     message_tokens = []
     if 'warning' in password_check:
@@ -198,11 +258,11 @@ def format_password_message(password_check):
         message_tokens.append(warning_message)
 
     if 'suggestions' in password_check:
-        suggestion_message = "Suggestions: " + ' '.join(password_check['suggestions'])
+        suggestion_message = "Suggestions: " + \
+            ' '.join(password_check['suggestions'])
         message_tokens.append(suggestion_message)
 
     return ' '.join(message_tokens)
-
 
 @app.route('/register_submit', methods=["OPTIONS", "POST"])
 def register_submit():
@@ -226,7 +286,8 @@ def register_submit():
         password_message = format_password_message(password_check)
 
         if len(new_password) < 8 or password_check.get('warning'):
-            print("Too weak: Score `{}` password_message `{}`".format(score, password_message))
+            print("Too weak: Score `{}` password_message `{}`".format(
+                score, password_message))
             response = create_response(
                 data={
                     "success": False,
@@ -239,18 +300,17 @@ def register_submit():
 
         try:
             hash_method = 'pbkdf2:sha256:50000'
-            password_hash = generate_password_hash(new_password, method=hash_method, salt_length=8)
+            password_hash = generate_password_hash(
+                new_password, method=hash_method, salt_length=8)
             new_user = Account(
                 username=new_username,
                 password_hash=password_hash,
                 email=new_email,
             )
-
             print('Creating new user')
             db_session.add(new_user)
             db_session.commit()
             print("Succeeded")
-
 
             response = create_response(data={"success": True}, status=200)
 
@@ -260,11 +320,13 @@ def register_submit():
             print("IntegrityError")
             error_messages = []
 
-            found_email = db_session.query(Account).filter_by(email=new_email).first()
+            found_email = db_session.query(
+                Account).filter_by(email=new_email).first()
             if found_email:
                 error_messages.append("Email in use")
 
-            found_name = db_session.query(Account).filter_by(username=new_username).first()
+            found_name = db_session.query(Account).filter_by(
+                username=new_username).first()
             if found_name:
                 error_messages.append("Username in use")
 

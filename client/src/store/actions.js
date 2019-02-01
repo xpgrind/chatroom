@@ -6,24 +6,27 @@ import { Logger } from "@/common"
 const logger = Logger.get("actions.js")
 
 export default {
-    attemptLogin({ commit }, { username, password }) {
-        logger.debug("Logging in with username", username, "password", password)
+    attemptLogin({ commit }, { email, password }) {
+        logger.debug("Logging in with useremil", email, "password", password)
         const url = API_URL + "/login"
         return new Promise((resolve, reject) => {
             axios
-                .post(url, { username, password }, { withCredentials: true })
-                .then(response => {
-                    return response.data
-                })
+                .post(url, { email, password }, { withCredentials: true })
+                .then(
+                    (response) => {
+                        // logger.debug("Login Response: ", response)
+                        return response.data
+                    }
+                )
                 .then(json => {
-                    logger.debug("Successfully logged in")
-                    commit("setLogin", { username, token: json.token }) // commit goes to mutations.js
+                    // logger.debug("Successfully logged in", json)
+                    commit("setLogin", { email, token: json.token })
                     resolve()
                 })
                 .catch(error => {
-                    logger.warn("Login Failed", error)
+                    // logger.warn("Error 1: Login Failed", error.response)
                     commit("clearLogin")
-                    reject(error.response.data)
+                    reject(error)
                 })
         })
     },
@@ -66,7 +69,7 @@ export default {
                     },
                     (error) => {
                         console.log("Register Error!", error)
-                    },
+                    }
                 )
                 .then(
                     json => {
@@ -108,6 +111,32 @@ export default {
                 })
                 .catch(error => {
                     logger.warn("check username failed", error)
+                    reject(error)
+                })
+        })
+    },
+
+    checkLoginEmail({ state, commit }, { newEmail }) {
+        const url = API_URL + "/check_login_emil"
+        return new Promise((resolve, reject) => {
+            axios
+                .post(url, { newEmail })
+                .then(
+                    (response) => { return response.data },
+                    (error) => { console.log("Error!", error) },
+                )
+                .then(json => {
+                    if (!json) {
+                        reject(new Error("No reply from server"))
+                    }
+                    if (json.available) {
+                        resolve()
+                    } else {
+                        reject(new Error("User Email not Found"))
+                    }
+                })
+                .catch(error => {
+                    logger.warn("check login email failed", error)
                     reject(error)
                 })
         })
