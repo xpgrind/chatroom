@@ -23,3 +23,10 @@ class Token(Base):
     token = Column(TEXT)
     create_time = Column(TIMESTAMP, nullable=False)
     expire_time = Column(TIMESTAMP, nullable=False)
+
+class Friends(Base):
+    __tablename__ = 'friends'
+    # Here we define columns for the table person
+    # Notice that each column is also a normal Python instance attribute.
+    friend_id = Column(Integer, nullable=True)
+    user_id = Column(Integer, primary_key=True,nullable=False)

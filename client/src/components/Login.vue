@@ -68,7 +68,10 @@ export default {
                 })
                 .then(
                     () => {
-                        this.$router.push({ path: this.redirect })
+                        this.message1 = "Succeeded:  Your User ID is" //+ response.data.ID
+                        setTimeout(() => {
+                            this.$router.push({ path: this.redirect })
+                        }, 3000)
                     }, error => {
                         logger.warn("Login.Vue Login Failed", error.response)
                         if (error.response && error.response.data) {

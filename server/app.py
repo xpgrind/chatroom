@@ -5,10 +5,12 @@ from flask import Flask, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from zxcvbn import zxcvbn
+from functools import wraps
 
 from chatroom.db.session import get_session
 from chatroom.db.tables import Account
 from chatroom.db.tables import Token
+from chatroom.db.tables import Friends
 
 import secrets
 from datetime import datetime
@@ -17,6 +19,91 @@ import base64
 
 app = Flask(__name__)
 client_address = "http://localhost:8080"
+
+
+class ChatroomRouter:
+    def __init__(self):
+        pass
+
+    def route(self, rule, *args, **kwargs):
+        # This has the arguments
+        string_methods = ', '.join(sorted(x.upper() for x in kwargs['methods']))
+        allowed_headers = kwargs.pop('allowed_headers', ['Content-type'])
+        requires_login = kwargs.pop('requires_login', True)
+        create_db_session = kwargs.pop('db', False)
+
+        string_headers = ', '.join(x.upper() for x in allowed_headers)
+
+        def function_wrapper(f):
+            print("Inside Wrapper" + f.__name__)
+
+            @wraps(f)
+            def route_call(*fargs, **fkwargs):
+                method = flask.request.method
+                print("{} call on route: {}".format(method, f.__name__))
+
+                # If this is an OPTIONS request, we handle it manually and never pass it to the route function.
+                if method == "OPTIONS":
+                    headers = {
+                        'Access-Control-Allow-Origin': client_address,
+                        'Access-Control-Allow-Methods': string_methods,
+                        'Access-Control-Allow-Headers': string_headers,
+                        'Access-Control-Allow-Credentials': 'true',
+                        'Content-type': "application/json",
+                    }
+
+                    response = flask.current_app.make_default_options_response()
+                    response.status_code = 200
+                    h = response.headers
+                    for k, v in headers.items():
+                        h[k] = v
+                    return response
+
+                # If this is a GET or POST request, f will be called.
+                if requires_login:
+                    json_data = flask.request.json
+                    if json_data is None:
+                        return flask.jsonify({"success": False, "reason": "no POST json data"})
+
+                    token = json_data.get('token')
+                    if token is None:
+                        return flask.jsonify({"success": False, "reason": "no token in POST data"})
+
+                    if token != "valid":
+                        return flask.jsonify({"success": False, "reason": "invalid token"})
+
+                # Token verification succeeded, continue:
+                print("Starting Call to function " + f.__name__)
+                if create_db_session:
+                    db_session = get_session()
+                    res = f(db_session)
+                    db_session.close()
+                else:
+                    res = f()
+                print("Done Call to function " + f.__name__)
+                return res
+
+            endpoint = kwargs.pop('endpoint', None)
+            app.add_url_rule(rule, endpoint, route_call, **kwargs)
+            return f
+
+        return function_wrapper
+
+
+chatroom = ChatroomRouter()
+
+
+@chatroom.route('/insecure', methods=["GET", "OPTIONS", "POST"], requires_login=False)
+def insecure_route():
+    response = flask.jsonify({"success": True})
+    return response
+
+
+# @app.route('/secure', methods=["GET", "OPTIONS", "POST"])
+@chatroom.route('/secure', methods=["GET", "OPTIONS", "POST"])
+def secure_route():
+    response = flask.jsonify({"success": True})
+    return response
 
 
 def create_response(data, status=200):
@@ -56,6 +143,8 @@ def create_options_response(status=200):
         h[k] = v
     return response
 
+
+
 @app.route('/login', methods=["OPTIONS", "POST"])
 def login():
     if flask.request.method == 'OPTIONS':
@@ -94,7 +183,7 @@ def login():
                 db_session.commit()
 
                 response = create_response(
-                    data={ "success": True, "token": str_token},
+                    data={ "success": True, "token": str_token },
                     status=200
                 )
                 print("Login Succeeded")
@@ -123,7 +212,6 @@ def login():
 
     return response
 
-
 @app.route('/friends', methods=["OPTIONS", "POST"])
 def friends():
     if flask.request.method == 'OPTIONS':
@@ -134,18 +222,44 @@ def friends():
         print("Loading Friend List")
         json_data = flask.request.json
         print("Data: {}".format(json_data))
-        username = json_data.get('username')
+        userid = json_data.get('userid')
         token = json_data.get('token')
         print("token: {}".format(token))
 
-    else:
-        response = create_response(
-            data={
-                "success": False
-            },
-            status=400,  # 400: client error
-        )
-        print("Auth Failed")
+        if(username.str_token == token):
+            friend = json_data.get('friend')
+            db_session = get_session()
+            error_messages = []
+            found_user = db_session.query(Account).filter_by(username=friend).first()
+
+            if found_user:
+                friend_id = db_session.query(Account).filter_by(username=friend).first().user_id
+
+                record = Friends(user_id=userid,friend_id=friend_id)
+                response = create_response(
+                    data={ "success": True, "message": "Success"}
+                )
+                print("Adding Friend Succeeded")
+                db_session.add(record)
+                db_session.commit()
+
+            else:
+                error_messages.append("User Not Found")
+                response = create_response(
+                        data={
+                            "success": False,
+                            "message": "Adding Friend failed: " + ", ".join(error_messages)
+                        })
+                print("User not Found")
+
+        else:
+            response = create_response(
+                data={
+                    "success": False
+                },
+                status=401,  # 400: client error
+            )
+            print("Auth Failed")
 
     return response
 

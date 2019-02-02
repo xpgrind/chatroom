@@ -1,6 +1,9 @@
 <template>
     <div id="chat">
-        <button @click="loadFriendList">Hello</button>
+         <h5>Input his/her username: <input type="text" v-model="name"></h5>
+        <button @click="addFriend">Add Friend</button>
+        <h4>Your Friends:</h4>
+        <button @click="loadFriendList">Load FriendsList</button>
         <div v-for="friend in friendList" :key="friend">{{friend}}</div>
     </div>
 </template>
@@ -14,15 +17,34 @@ export default {
     name: 'Chat',
     data () {
         return {
-            title: 'Chat'
+            title: 'Chat',
+            name: '',
         }
     },
+
     methods: {
-        loadFriendList() {
-            logger.debug("Getting user list")
-            this.$store.dispatch("loadFriendList")
+        addFriend() {
+        this.$store.state.friends.push(name)
+        this.friendList.push(this.name)
+
+        this.$store
+            .dispatch("setFriendsList", {
+                friendList: this.friendList,
+            })
+            .then(
+                () => {
+                }, error => {
+                    logger.warn("Login.Vue Login Failed", error.response)
+                    if (error.response && error.response.data) {
+                        this.message1 = "failed: " + error.response.data.message
+                    } else {
+                        this.message1 = "No reason given"
+                    }
+                }
+            )
         }
     },
+
     computed: {
         friendList() {
             return this.$store.state.friends
