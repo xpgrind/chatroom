@@ -5,93 +5,23 @@ from flask import Flask, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from zxcvbn import zxcvbn
-from functools import wraps
 
 from chatroom.db.session import get_session
 from chatroom.db.tables import Account
 from chatroom.db.tables import Token
-from chatroom.db.tables import Friends
+from chatroom.db.tables import Friend
 
 import secrets
 from datetime import datetime
 from datetime import timedelta
 import base64
 
+
+from chatroom_router import ChatroomRouter, client_address
+
 app = Flask(__name__)
-client_address = "http://localhost:8080"
 
-
-class ChatroomRouter:
-    def __init__(self):
-        pass
-
-    def route(self, rule, *args, **kwargs):
-        # This has the arguments
-        string_methods = ', '.join(sorted(x.upper() for x in kwargs['methods']))
-        allowed_headers = kwargs.pop('allowed_headers', ['Content-type'])
-        requires_login = kwargs.pop('requires_login', True)
-        create_db_session = kwargs.pop('db', False)
-
-        string_headers = ', '.join(x.upper() for x in allowed_headers)
-
-        def function_wrapper(f):
-            print("Inside Wrapper" + f.__name__)
-
-            @wraps(f)
-            def route_call(*fargs, **fkwargs):
-                method = flask.request.method
-                print("{} call on route: {}".format(method, f.__name__))
-
-                # If this is an OPTIONS request, we handle it manually and never pass it to the route function.
-                if method == "OPTIONS":
-                    headers = {
-                        'Access-Control-Allow-Origin': client_address,
-                        'Access-Control-Allow-Methods': string_methods,
-                        'Access-Control-Allow-Headers': string_headers,
-                        'Access-Control-Allow-Credentials': 'true',
-                        'Content-type': "application/json",
-                    }
-
-                    response = flask.current_app.make_default_options_response()
-                    response.status_code = 200
-                    h = response.headers
-                    for k, v in headers.items():
-                        h[k] = v
-                    return response
-
-                # If this is a GET or POST request, f will be called.
-                if requires_login:
-                    json_data = flask.request.json
-                    if json_data is None:
-                        return flask.jsonify({"success": False, "reason": "no POST json data"})
-
-                    token = json_data.get('token')
-                    if token is None:
-                        return flask.jsonify({"success": False, "reason": "no token in POST data"})
-
-                    if token != "valid":
-                        return flask.jsonify({"success": False, "reason": "invalid token"})
-
-                # Token verification succeeded, continue:
-                print("Starting Call to function " + f.__name__)
-                if create_db_session:
-                    db_session = get_session()
-                    res = f(db_session)
-                    db_session.close()
-                else:
-                    res = f()
-                print("Done Call to function " + f.__name__)
-                return res
-
-            endpoint = kwargs.pop('endpoint', None)
-            app.add_url_rule(rule, endpoint, route_call, **kwargs)
-            return f
-
-        return function_wrapper
-
-
-chatroom = ChatroomRouter()
-
+chatroom = ChatroomRouter(app)
 
 @chatroom.route('/insecure', methods=["GET", "OPTIONS", "POST"], requires_login=False)
 def insecure_route():
@@ -99,271 +29,159 @@ def insecure_route():
     return response
 
 
-# @app.route('/secure', methods=["GET", "OPTIONS", "POST"])
 @chatroom.route('/secure', methods=["GET", "OPTIONS", "POST"])
 def secure_route():
     response = flask.jsonify({"success": True})
     return response
 
 
-def create_response(data, status=200):
-    allowed_methods = ["GET", "POST"]
-    string_methods = ', '.join(sorted(x.upper() for x in allowed_methods))
-    string_headers = ', '.join(x.upper() for x in ['Content-type'])
-    headers = {
-        'Access-Control-Allow-Origin': client_address,
-        'Access-Control-Allow-Methods': string_methods,
-        'Access-Control-Allow-Headers': string_headers,
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-type': "application/json",
-    }
-    response = flask.jsonify(**data)
-    response.status_code = status
-    h = response.headers
-    for k, v in headers.items():
-        h[k] = v
+@chatroom.route('/secure_needs_db', methods=["GET", "OPTIONS", "POST"], db=True)
+def secure_route_with_db(db_session):
+    response = flask.jsonify({"success": True})
     return response
 
 
-def create_options_response(status=200):
-    allowed_methods = ["OPTIONS"]
-    string_methods = ', '.join(sorted(x.upper() for x in allowed_methods))
-    string_headers = ', '.join(x.upper() for x in ['Content-type'])
-    headers = {
-        'Access-Control-Allow-Origin': client_address,
-        'Access-Control-Allow-Methods': string_methods,
-        'Access-Control-Allow-Headers': string_headers,
-        'Access-Control-Allow-Credentials': 'true',
-        'Content-type': "application/json",
-    }
-    response = flask.current_app.make_default_options_response()
-    response.status_code = status
-    h = response.headers
-    for k, v in headers.items():
-        h[k] = v
-    return response
+@chatroom.route('/login', methods=["OPTIONS", "POST"], db=True, requires_login=False)
+def login(db_session):
+    print("Login Attempt")
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    useremail = json_data.get('email')
+    password = json_data.get('password')
 
+    error_messages = []
+    found_email = db_session.query(Account).filter_by(email=useremail).first()
 
+    if found_email:
+        password_hash = db_session.query(Account).filter_by(email=useremail).first().password_hash
+        correct_password = check_password_hash(password_hash, password)
+        user_id = db_session.query(Account).filter_by(email=useremail).first().id
 
-@app.route('/login', methods=["OPTIONS", "POST"])
-def login():
-    if flask.request.method == 'OPTIONS':
-        print("Getting OPTIONS")
-        response = create_options_response()
+        if correct_password:
+            create_time = datetime.utcnow()
+            token = secrets.token_bytes()
+            str_token = base64.b64encode(token).decode('utf-8')
 
-    elif flask.request.method == 'POST':
-        print("Login Attempt")
-        json_data = flask.request.json
-        print("Data: {}".format(json_data))
-        useremail = json_data.get('email')
-        password = json_data.get('password')
-
-        db_session = get_session()
-        error_messages = []
-        found_email = db_session.query(Account).filter_by(email=useremail).first()
-
-        if found_email:
-            password_hash = db_session.query(Account).filter_by(email=useremail).first().password_hash
-            flag = check_password_hash(password_hash, password)
-            user_id = db_session.query(Account).filter_by(email=useremail).first().id
-
-            if flag:
-                create_time = datetime.utcnow()
-                token = secrets.token_bytes()
-                str_token = base64.b64encode(token).decode('utf-8')
-
-                new_token = Token(
-                    user_id=user_id,
-                    create_time=create_time,
-                    token=str_token,
-                    expire_time=create_time + timedelta(hours=24)
-                )
-
-                db_session.add(new_token)
-                db_session.commit()
-
-                response = create_response(
-                    data={ "success": True, "token": str_token },
-                    status=200
-                )
-                print("Login Succeeded")
-
-            else:
-                db_session.rollback()
-                token = ''
-                error_messages.append("Password is Wrong")
-                response = create_response(
-                    data={
-                        "success": False,
-                        "message": "Login failed: " + ", ".join(error_messages)
-                    }, status=403)  # 403 == Forbidden)
-                print("Password Failed")
-
-        else:
-            error_messages.append("User Email Not Found")
-            response = create_response(
-                    data={
-                        "success": False,
-                        "message": "Login failed: " + ", ".join(error_messages)
-                    }, status=403)  # 403 == Forbidden)
-            print("Email not Found")
-
-        db_session.close()
-
-    return response
-
-@app.route('/friends', methods=["OPTIONS", "POST"])
-def friends():
-    if flask.request.method == 'OPTIONS':
-        print("Getting OPTIONS")
-        response = create_options_response()
-
-    elif flask.request.method == 'POST':
-        print("Loading Friend List")
-        json_data = flask.request.json
-        print("Data: {}".format(json_data))
-        userid = json_data.get('userid')
-        token = json_data.get('token')
-        print("token: {}".format(token))
-
-        if(username.str_token == token):
-            friend = json_data.get('friend')
-            db_session = get_session()
-            error_messages = []
-            found_user = db_session.query(Account).filter_by(username=friend).first()
-
-            if found_user:
-                friend_id = db_session.query(Account).filter_by(username=friend).first().user_id
-
-                record = Friends(user_id=userid,friend_id=friend_id)
-                response = create_response(
-                    data={ "success": True, "message": "Success"}
-                )
-                print("Adding Friend Succeeded")
-                db_session.add(record)
-                db_session.commit()
-
-            else:
-                error_messages.append("User Not Found")
-                response = create_response(
-                        data={
-                            "success": False,
-                            "message": "Adding Friend failed: " + ", ".join(error_messages)
-                        })
-                print("User not Found")
-
-        else:
-            response = create_response(
-                data={
-                    "success": False
-                },
-                status=401,  # 400: client error
+            new_token = Token(
+                user_id=user_id,
+                create_time=create_time,
+                token_string=str_token,
+                expire_time=create_time + timedelta(hours=24)
             )
-            print("Auth Failed")
 
-    return response
+            db_session.add(new_token)
+            db_session.commit()
 
-
-@app.route('/check_username', methods=["OPTIONS", "POST"])
-def check_username():
-    if flask.request.method == 'OPTIONS':
-        print("Getting OPTIONS")
-        response = create_options_response()
-
-    elif flask.request.method == 'POST':
-        print("Checking username")
-        json_data = flask.request.json
-        print("Data: {}".format(json_data))
-        new_username = json_data.get('newUsername')
-
-        db_session = get_session()
-        found_user = db_session.query(Account).filter_by(
-            username=new_username).first()
-
-        if found_user is None:
-            response = create_response(data={
-                "success": True,
-                "available": True,
-            })
-            print("Username is available")
+            print("Login Succeeded")
+            return flask.jsonify({"success": True, "token": str_token, "user_id": user_id})
         else:
-            response = create_response(
-                data={
-                    "success": False,
-                    "available": False,
-                }
-            )
-            print("Username is not available")
-
-    return response
-
-
-@app.route('/check_login_emil', methods=["OPTIONS", "POST"])
-def check_loginEmail():
-    if flask.request.method == 'OPTIONS':
-        print("Getting OPTIONS")
-        response = create_options_response()
-
-    elif flask.request.method == 'POST':
-        print("Checking Login user email")
-        json_data = flask.request.json
-        print("Data: {}".format(json_data))
-        new_email = json_data.get('newEmail')
-
-        db_session = get_session()
-        found_user = db_session.query(Account).filter_by(
-            email=new_email).first()
-
-        if found_user is None:
-            response = create_response(data={
+            db_session.rollback()
+            token = ''
+            error_messages.append("Password is Wrong")
+            return flask.jsonify({
                 "success": False,
-                "available": False,
-            })
-            print("User Email Not Found")
-        else:
-            response = create_response(
-                data={
-                    "success": True,
-                    "available": True,
-                }
-            )
-            print("User Email Found")
-
-    return response
+                "message": "Login failed: " + ", ".join(error_messages)
+            }), 403
+    else:
+        error_messages.append("User Email Not Found")
+        print("Email not Found")
+        return flask.jsonify({
+            "success": False,
+            "message": "Login failed: " + ", ".join(error_messages)
+        }), 403
 
 
-@app.route('/check_email', methods=["OPTIONS", "POST"])
-def check_email():
-    if flask.request.method == 'OPTIONS':
-        print("Getting OPTIONS")
-        response = create_options_response()
+@chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True, requires_login=True)
+def addfriends(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
 
-    elif flask.request.method == 'POST':
-        print("Checking email")
-        json_data = flask.request.json
-        print("Data: {}".format(json_data))
-        new_email = json_data.get('newEmail')
+    friend_name = json_data.get('new_friend')
+    if friend_name is None:
+        print("Friend Not Found")
 
-        db_session = get_session()
-        found_email = db_session.query(
-            Account).filter_by(email=new_email).first()
+    user_id = json_data.get('user_id')
+    found_friend = db_session.query(Account).filter_by(username=friend_name).first()
 
-        if found_email is None:
-            response = create_response(data={
-                "success": True,
-                "available": True,
-            })
-            print("Email address is available")
-        else:
-            response = create_response(
-                data={
-                    "success": False,
-                    "available": False,
-                }
-            )
-            print("Email address is being taken")
+    if found_friend:
+        friend_id = found_friend.id
 
-    return response
+        record = Friend(user_id=user_id, friend_id=friend_id)
+
+        print("Adding Friend Succeeds")
+        db_session.add(record)
+        db_session.commit()
+
+        return flask.jsonify({
+            "success": True,
+            "message": "Adding Friend Succeeds"
+        }), 200
+    else:
+        print("User not Found")
+        return flask.jsonify({
+            "success": False,
+            "message": "Adding Friend failed: User Not Found"
+        }), 400
+
+
+@chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True, requires_login=True)
+def friendsList(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    user_id = json_data.get('user_id')
+    records = db_session.query(Friend).filter_by(user_id=user_id).all()
+
+    for item in records:
+        friend_id = item.friend_id
+        friend_name = db_session.query(Account).filter_by(id=friend_id).username
+        print(friend_name)
+
+
+@chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)
+def check_username(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    new_username = json_data.get('newUsername')
+
+    found_user = db_session.query(Account).filter_by(
+        username=new_username).first()
+
+    if found_user is None:
+        return flask.jsonify({
+            "success": True,
+            "available": True
+        }), 200
+        print("Username is available")
+
+    else:
+        return flask.jsonify({
+            "success": True,
+            "available": False
+        })
+        print("Username is not available")
+
+
+@chatroom.route('/check_email', methods=["OPTIONS", "POST"], db=True, requires_login=False)
+def check_email(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    new_email = json_data.get('newEmail')
+    found_email = db_session.query(Account).filter_by(email=new_email).first()
+
+    if found_email is None:
+        return flask.jsonify({
+            "success": True,
+            "available": True,
+        })
+        print("Email address Not Found")
+
+    else:
+        return flask.jsonify({
+            "success": True,
+            "available": False,
+        })
+        print("Email address Found")
+
 
 def format_password_message(password_check):
     message_tokens = []
@@ -378,86 +196,72 @@ def format_password_message(password_check):
 
     return ' '.join(message_tokens)
 
-@app.route('/register_submit', methods=["OPTIONS", "POST"])
-def register_submit():
-    if flask.request.method == 'OPTIONS':
-        print("Getting OPTIONS")
-        response = create_options_response()
 
-    elif flask.request.method == 'POST':
-        print("Register submit handling")
-        json_data = flask.request.json
-        print("Data: {}".format(json_data))
+@chatroom.route('/register_submit', methods=["OPTIONS", "POST"], db=True, requires_login=False)
+def register_submit(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
 
-        new_email = json_data.get('newEmail')
-        new_username = json_data.get('newUsername')
-        new_password = json_data.get('newPassword')
+    new_email = json_data.get('newEmail')
+    new_username = json_data.get('newUsername')
+    new_password = json_data.get('newPassword')
 
-        password_check = zxcvbn(new_password, user_inputs=[
-                                new_email, new_username])
-        score = password_check['score']
+    password_check = zxcvbn(new_password, user_inputs=[
+                            new_email, new_username])
+    score = password_check['score']
 
-        password_message = format_password_message(password_check)
+    password_message = format_password_message(password_check)
 
-        if len(new_password) < 8 or password_check.get('warning'):
-            print("Too weak: Score `{}` password_message `{}`".format(
-                score, password_message))
-            response = create_response(
-                data={
-                    "success": False,
-                    "message": "Password too weak. " + password_message
-                }
-            )
-            return response
+    if len(new_password) < 8 or password_check.get('warning'):
+        print("Too weak: Score `{}` password_message `{}`".format(
+            score, password_message))
+        return flask.jsonify({
+        "success": False,
+        "message": "Password too weak. " + password_message
+    })
 
-        db_session = get_session()
+    try:
+        hash_method = 'pbkdf2:sha256:50000'
+        password_hash = generate_password_hash(
+            new_password, method=hash_method, salt_length=8)
+        new_user = Account(
+            username=new_username,
+            password_hash=password_hash,
+            email=new_email,
+        )
+        print('Creating new user')
+        db_session.add(new_user)
+        db_session.commit()
+        print("Succeeded")
 
-        try:
-            hash_method = 'pbkdf2:sha256:50000'
-            password_hash = generate_password_hash(
-                new_password, method=hash_method, salt_length=8)
-            new_user = Account(
-                username=new_username,
-                password_hash=password_hash,
-                email=new_email,
-            )
-            print('Creating new user')
-            db_session.add(new_user)
-            db_session.commit()
-            print("Succeeded")
+        return flask.jsonify({
+        "success": True,
+        }),200
 
-            response = create_response(data={"success": True}, status=200)
+    except IntegrityError:
+        db_session.rollback()
 
-        except IntegrityError:
-            db_session.rollback()
+        print("IntegrityError")
+        error_messages = []
 
-            print("IntegrityError")
-            error_messages = []
+        found_email = db_session.query(
+            Account).filter_by(email=new_email).first()
+        if found_email:
+            error_messages.append("Email in use")
 
-            found_email = db_session.query(
-                Account).filter_by(email=new_email).first()
-            if found_email:
-                error_messages.append("Email in use")
+        found_name = db_session.query(Account).filter_by(
+            username=new_username).first()
+        if found_name:
+            error_messages.append("Username in use")
 
-            found_name = db_session.query(Account).filter_by(
-                username=new_username).first()
-            if found_name:
-                error_messages.append("Username in use")
-
-            response = create_response(data={
-                "success": False,
-                "message": "Account creation failed: " + ", ".join(error_messages)
-            })
-
-        db_session.close()
-
-    return response
-
-if __name__ == '__main__':
-    app.run(debug=True)
+        return flask.jsonify({
+        "success": False,
+        "message": "Account creation failed: " + ", ".join(error_messages)
+        }),200
 
 
-# @app.route('/users/<command>', methods=["POST"])
+
+# @chatroom.route('/users/<command>', methods=["POST"])
 # def users(command):
 #     # This is how you get data from the post request body
 #     json_data = flask.request.json
@@ -502,3 +306,7 @@ if __name__ == '__main__':
 #     return jsonify({
 #         "message": "Command: {}, Success".format(command)
 #     })
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

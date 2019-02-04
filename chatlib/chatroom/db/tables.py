@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
-
 class Account(Base):
     __tablename__ = 'account'
     # Here we define columns for the table person
@@ -20,13 +19,13 @@ class Token(Base):
     # Notice that each column is also a normal Python instance attribute.
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, nullable=False)
-    token = Column(TEXT)
+    token_string = Column(TEXT)
     create_time = Column(TIMESTAMP, nullable=False)
     expire_time = Column(TIMESTAMP, nullable=False)
 
-class Friends(Base):
-    __tablename__ = 'friends'
+class Friend(Base):
+    __tablename__ = 'friend'
     # Here we define columns for the table person
     # Notice that each column is also a normal Python instance attribute.
     friend_id = Column(Integer, nullable=True)
-    user_id = Column(Integer, primary_key=True,nullable=False)
+    user_id = Column(Integer, primary_key=True, nullable=False)

@@ -67,8 +67,8 @@ export default {
                     password: this.password
                 })
                 .then(
-                    () => {
-                        this.message1 = "Succeeded:  Your User ID is" //+ response.data.ID
+                    (response) => {
+                        this.message1 = "Succeeded:  Your User ID is" // + response.data.ID
                         setTimeout(() => {
                             this.$router.push({ path: this.redirect })
                         }, 3000)
@@ -82,16 +82,19 @@ export default {
                     }
                 )
         },
-
         checkEmail() {
             console.log("Email is " + this.email)
             this.$store
-                .dispatch("checkLoginEmail", {
+                .dispatch("checkEmail", {
                     newEmail: this.email
                 })
                 .then(
-                    () => {
-                        this.message = "Email Found"
+                    (json) => {
+                        if (json.available) {
+                            this.message = "Email Not Found"
+                        } else {
+                            this.message = "Email Found"
+                        }
                     }, err => {
                         this.message = "failed: " + err
                     }

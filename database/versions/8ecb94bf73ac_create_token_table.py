@@ -20,7 +20,7 @@ def upgrade():
         'token',
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('user_id', sa.Integer, sa.ForeignKey('account.id')),
-        sa.Column('token', sa.Text, nullable=False, unique=True),
+        sa.Column('token_string', sa.Text, nullable=False, unique=True),
         sa.Column('create_time', sa.TIMESTAMP, nullable=False, unique=True),
         sa.Column('expire_time', sa.TIMESTAMP, nullable=False, unique=True)
     )

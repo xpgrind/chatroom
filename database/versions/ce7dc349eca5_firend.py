@@ -17,10 +17,10 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        'friends',
+        'friend',
         sa.Column('user_id', sa.Integer),
         sa.Column('friend_id', sa.Integer),
     )
 
 def downgrade():
-    op.drop_table('friends')
+    op.drop_table('friend')

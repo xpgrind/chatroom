@@ -62,10 +62,13 @@ export default {
                     newUsername: this.username
                 })
                 .then(
-                    () => {
-                        this.message = "Username Available"
-                    },
-                    err => {
+                    (json) => {
+                        if (json.available) {
+                            this.message = "UserName Available"
+                        } else {
+                            this.message = "UserName Isn't Available"
+                        }
+                    }, err => {
                         this.message = "failed: " + err
                     }
                 )
@@ -77,14 +80,18 @@ export default {
                     newEmail: this.email
                 })
                 .then(
-                    () => {
-                        this.message2 = "Email Available"
-                    },
-                    err => {
+                    (json) => {
+                        if (json.available) {
+                            this.message2 = "Email Available"
+                        } else {
+                            this.message2 = "Email Isn't Available"
+                        }
+                    }, err => {
                         this.message2 = "failed: " + err
                     }
                 )
         },
+
         registerUser() {
             console.log("registerUser")
             this.$store
@@ -100,7 +107,7 @@ export default {
                             this.username = ''
                             this.email = ''
                             this.password = ''
-                        }, 2000)
+                        }, 3000)
                     },
                     err => {
                         this.registerStatus = "" + err
