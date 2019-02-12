@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <h1 class="page-title">Dizhu's Chatroom</h1>
+        <h1 class="page-title">Pig's Chatroom</h1>
         <router-view></router-view>
     </div>
 </template>
@@ -29,32 +29,34 @@ export default {
 
 <style>
 *{
-  color:rgb(28, 160, 28);
+  color:rgb(77, 202, 52);
   font-family: Verdana, sans-serif;
 }
-
-body {
-  background-color: lightblue;
+body{
+    background-color: bisque;
 }
-
 form{
   margin-bottom: 100px;
   margin-left: 300px;
 }
  a:hover{
-  background-color: yellow;
+  background-color: purple;
   text-decoration: underline;
  }
 
+span{
+    margin-left: 30px;
+}
 .container {
   border-style: dotted;
-  background-color: aliceblue;
-  width: 600px;
-  padding-top: 20px;
+  background-color: ivory;
+  width: 650px;
+  padding-top: 30px;
   padding-left: 30px;
   padding-bottom: 30px;
-  border: 2px solid grey;
-  margin: 50px;
+  border: 6px solid grey;
+  margin: 80px;
+  border-radius: 12px;
 }
 
 </style>

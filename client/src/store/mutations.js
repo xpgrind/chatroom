@@ -1,5 +1,6 @@
 import Vue from "vue"
 import { Logger } from "@/common"
+import { stat } from "fs"
 
 const logger = Logger.get("mutations.js")
 
@@ -29,4 +30,8 @@ export default {
         logger.debug("Set Friends:", friends)
         state.friends = friends
     },
+
+    clearFriends(state) {
+        state.friends = null
+    }
 }

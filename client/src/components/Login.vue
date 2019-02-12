@@ -1,8 +1,8 @@
 <template>
   <div id="login">
+    <img src="/static/pig4.png" width="200px" height="180px">
     <form class="container" @submit.prevent="login">
-      <!-- <img src="/static/1.jpg" width="200px" height="180px"> -->
-      <h1>{{title}}</h1>Name:
+      <h1>{{title}}</h1>Email:
       <br>
       <input
         v-model="email"
@@ -36,6 +36,11 @@
       <router-link to="/">
         <a>Home Page</a>
       </router-link>
+      <span>
+      <router-link to="/profile">
+        <a>Profile Page</a>
+      </router-link>
+      </span>
     </form>
   </div>
 </template>
@@ -68,7 +73,7 @@ export default {
                 })
                 .then(
                     (response) => {
-                        this.message1 = "Succeeded:  Your User ID is" // + response.data.ID
+                        this.message1 = "Login Succeeded, wait 3s please"
                         setTimeout(() => {
                             this.$router.push({ path: this.redirect })
                         }, 3000)
@@ -103,3 +108,12 @@ export default {
     }
 }
 </script>
+
+<style scooped>
+img{
+    position: absolute;
+    left: 450px;
+    top:0px;
+    z-index: -1;
+}
+</style>

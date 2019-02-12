@@ -5,18 +5,20 @@ from flask import Flask, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from zxcvbn import zxcvbn
+from sqlalchemy.sql import text
 
 from chatroom.db.session import get_session
 from chatroom.db.tables import Account
 from chatroom.db.tables import Token
 from chatroom.db.tables import Friend
+from chatroom.db.tables import Profile_Pic
 
 import secrets
 from datetime import datetime
 from datetime import timedelta
 import base64
 
-
+import pdb
 from chatroom_router import ChatroomRouter, client_address
 
 app = Flask(__name__)
@@ -95,33 +97,45 @@ def login(db_session):
 def addfriends(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-
-    friend_name = json_data.get('new_friend')
-    if friend_name is None:
-        print("Friend Not Found")
-
     user_id = json_data.get('user_id')
-    found_friend = db_session.query(Account).filter_by(username=friend_name).first()
+    friend_name = json_data.get('new_friend')
 
-    if found_friend:
-        friend_id = found_friend.id
-
-        record = Friend(user_id=user_id, friend_id=friend_id)
-
-        print("Adding Friend Succeeds")
-        db_session.add(record)
-        db_session.commit()
-
-        return flask.jsonify({
-            "success": True,
-            "message": "Adding Friend Succeeds"
-        }), 200
-    else:
-        print("User not Found")
+    if not friend_name:
+        print("Invalid Input")
         return flask.jsonify({
             "success": False,
-            "message": "Adding Friend failed: User Not Found"
-        }), 400
+            "available": False
+        })
+
+    found_user = db_session.query(Account).filter_by(username=friend_name).first()
+
+    if found_user:
+        friend_id = found_user.id
+        friendship = db_session.query(Friend).filter_by(user_id=user_id, friend_id=friend_id).first()
+        if friendship:
+            print("You have already added {}".format(friend_name))
+            return flask.jsonify({
+                "success": True,
+                "available": False,
+            }), 400
+        else:
+            new_friend = Friend(
+                user_id=user_id,
+                friend_id=friend_id
+            )
+            db_session.add(new_friend)
+            db_session.commit()
+            print("Succeeded in adding {} as a friend of {}".format(friend_id, user_id))
+            return flask.jsonify({
+                "success": True,
+                "available": True,
+            }), 200
+    else:
+        print("Friend Not Found")
+        return flask.jsonify({
+            "success": True,
+            "available": False,
+        })
 
 
 @chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True, requires_login=True)
@@ -129,12 +143,29 @@ def friendsList(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
-    records = db_session.query(Friend).filter_by(user_id=user_id).all()
+    friends = db_session.query(Friend).filter_by(user_id=user_id).all()
+    # friend_ids = [x.friend_id for x in friends]
 
-    for item in records:
-        friend_id = item.friend_id
-        friend_name = db_session.query(Account).filter_by(id=friend_id).username
-        print(friend_name)
+    friends = []
+
+    prepared_statement = text('select account.username from friend inner join account on friend.friend_id = account.id where friend.user_id = :my_user_id;')
+    friend_rows = db_session.execute(prepared_statement, {'my_user_id': user_id})
+    for row in friend_rows:
+        username = row[0]
+        friends.append(username)
+
+    return flask.jsonify({
+        "success": True,
+        "friends": friends,
+    }), 200
+
+@chatroom.route('/upload_profile', methods=["OPTIONS", "POST"], db=True, requires_login=True)
+def upload_profile(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    pic = json_data.get('picPath')
+
+
 
 
 @chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)
@@ -143,22 +174,21 @@ def check_username(db_session):
     print("Data: {}".format(json_data))
     new_username = json_data.get('newUsername')
 
-    found_user = db_session.query(Account).filter_by(
-        username=new_username).first()
+    found_user = db_session.query(Account).filter_by(username=new_username).first()
 
     if found_user is None:
+        print("Username is available")
         return flask.jsonify({
             "success": True,
             "available": True
         }), 200
-        print("Username is available")
 
     else:
+        print("Username is not available")
         return flask.jsonify({
             "success": True,
             "available": False
         })
-        print("Username is not available")
 
 
 @chatroom.route('/check_email', methods=["OPTIONS", "POST"], db=True, requires_login=False)
@@ -206,8 +236,7 @@ def register_submit(db_session):
     new_username = json_data.get('newUsername')
     new_password = json_data.get('newPassword')
 
-    password_check = zxcvbn(new_password, user_inputs=[
-                            new_email, new_username])
+    password_check = zxcvbn(new_password, user_inputs=[new_email, new_username])
     score = password_check['score']
 
     password_message = format_password_message(password_check)
@@ -229,6 +258,7 @@ def register_submit(db_session):
             password_hash=password_hash,
             email=new_email,
         )
+
         print('Creating new user')
         db_session.add(new_user)
         db_session.commit()
@@ -290,7 +320,6 @@ def register_submit(db_session):
 #             raise RequestError("Username already exists: {}".format(username))
 
 #     elif command == "list":
-#         from pprint import pprint; import pdb; pdb.set_trace()
 #         raise NotImplementedError()
 #     elif command == "remove":
 #         username = json_data.get('username')
@@ -309,4 +338,5 @@ def register_submit(db_session):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run()

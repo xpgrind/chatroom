@@ -27,5 +27,13 @@ class Friend(Base):
     __tablename__ = 'friend'
     # Here we define columns for the table person
     # Notice that each column is also a normal Python instance attribute.
-    friend_id = Column(Integer, nullable=True)
+    friend_id = Column(Integer,nullable=False)
     user_id = Column(Integer, primary_key=True, nullable=False)
+
+class Profile_Pic(Base):
+    __tablename__ = 'profile_pic'
+    id = Column(Integer, primary_key=True)
+    account = relationship("Account", backref="user_of_account")
+    user = Column(Integer, ForeignKey("account.id"), nullable=False)
+    path = Column(TEXT, nullable=False)
+    name = Column(String(30))

@@ -2,6 +2,7 @@ import flask
 from flask import Flask, jsonify
 from functools import wraps
 from sqlalchemy.sql import text
+from pprint import pprint
 
 from chatroom.db.session import get_session
 
@@ -65,6 +66,9 @@ class ChatroomRouter:
                 if requires_login:
                     ### Validate token
                     json_data = flask.request.json
+                    print("Got login info: ")
+                    pprint(json_data)
+
                     if json_data is None:
                         return create_response(headers, {"success": False, "reason": "no POST json data"}, 403)
 
@@ -112,7 +116,7 @@ class ChatroomRouter:
                 if db_session is not None:
                     db_session.close()
 
-                print("Done Call to function " + f.__name__)
+                print("Done Call to function " + f.__name__, "set headers: {}".format(response.headers))
                 return res
 
             # This bit right here is what is required to add the route to flask in the end.

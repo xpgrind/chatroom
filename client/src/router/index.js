@@ -4,6 +4,8 @@ import HelloWorld from '@/components/HelloWorld'
 import Login from '@/components/Login'
 import Chat from '@/components/Chat'
 import Register from '@/components/Register'
+import Room from '@/components/Room'
+import Profile from '@/components/Profile'
 import TestDatabase from '@/components/TestDatabase'
 
 Vue.use(Router) // register router
@@ -35,6 +37,16 @@ export default new Router({
             path: '/test',
             name: 'TestDatabase',
             component: TestDatabase
+        },
+        {
+            path: '/room',
+            name: 'Room',
+            component: Room
+        },
+        {
+            path: '/profile',
+            name: 'Profile',
+            component: Profile
         },
     ]
 })

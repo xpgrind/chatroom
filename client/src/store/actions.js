@@ -36,20 +36,17 @@ export default {
         const url = API_URL + "/friends/list"
         return new Promise((resolve, reject) => {
             axios
-                .post(url, { username: state.username, token: state.token })
+                .post(url, { user_id: state.userID, token: state.token })
                 .then(
                     (response) => { return response.data },
                     (error) => { console.log("Error!", error) }
                 )
-                .then(json => {
-                    logger.debug("loadFriendList succeeded")
-                    commit("setFriendList", { friends: json.friends })
-                    resolve()
-                })
-                .catch(error => {
-                    logger.warn("loadFriendList failed", error)
-                    reject(error.response)
-                })
+                .then(
+                    json => {
+                        console.log("Loading friend succeeded")
+                        commit("setFriendList", {friends: json.friends})
+                        resolve(json)
+                    })
         })
     },
 
@@ -58,19 +55,24 @@ export default {
         const url = API_URL + "/friends/add"
         return new Promise((resolve, reject) => {
             axios
-                .post(url, { user_id: state.userID, token: state.token, newFriend })
+                .post(url, { user_id: state.userID, token: state.token, new_friend: newFriend })
                 .then(
-                    (response) => { return response },
+                    (response) => { return response.data },
                     (error) => { console.log("Error!", error) }
                 )
-                .then(json => {
-                    logger.debug("Friend request sent")
-                    dispatch("loadFriendList")
-                    resolve()
-                })
-                .catch(error => {
-                    logger.warn("Adding Friends failed", error)
-                    reject(error)
+                .then(
+                    json => {
+                        if (!json.available) {
+                            reject(new Error("Friend Not Found"))
+                        } else {
+                            logger.debug("Friend request sent")
+                            console.log("Adding friend succeeded")
+                            dispatch("loadFriendList")
+                            resolve()
+                        }
+                    }).catch(error => {
+                    logger.warn("Adding failed", error)
+                    reject(new Error("Friend exists in your list already !"))
                 })
         })
     },
@@ -78,6 +80,10 @@ export default {
     clearLogin({ commit }) {
         Vue.cookie.delete("token")
         commit("clearLogin")
+    },
+
+    clearFriends({ commit }) {
+        commit("clearFriends")
     },
 
     registerUser({ state, commit }, { newEmail, newUsername, newPassword }) {
@@ -151,6 +157,26 @@ export default {
                 })
                 .catch(error => {
                     logger.warn("Check email failed", error)
+                    reject(error)
+                })
+        })
+    },
+    uploadFile({ state, commit }, { path }) {
+        const url = API_URL + "/check_path"
+        return new Promise((resolve, reject) => {
+            axios
+                .post(url, { path })
+                .then(
+                    (reponse) => { return response.data },
+                )
+                .then(json => {
+                    if (!json) {
+                        reject(new Error("No reply from server"))
+                    }
+                    resolve(json)
+                })
+                .catch(error => {
+                    logger.warn("Picture Path failed", error)
                     reject(error)
                 })
         })
