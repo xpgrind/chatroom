@@ -18,8 +18,9 @@ depends_on = None
 def upgrade():
     op.create_table(
         'friend',
-        sa.Column('user_id', sa.Integer, primary_key=True, nullable=False),
+        sa.Column('user_id', sa.Integer, nullable=False),
         sa.Column('friend_id', sa.Integer),
+        sa.PrimaryKeyConstraint('user_id', 'friend_id', name='mytable_pk')
     )
 
 def downgrade():

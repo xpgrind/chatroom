@@ -73,10 +73,8 @@ export default {
                 })
                 .then(
                     (response) => {
-                        this.message1 = "Login Succeeded, wait 3s please"
-                        setTimeout(() => {
-                            this.$router.push({ path: this.redirect })
-                        }, 3000)
+                        this.message1 = "Login Succeeded"
+                        this.$router.push({ path: this.redirect })
                     }, error => {
                         logger.warn("Login.Vue Login Failed", error.response)
                         if (error.response && error.response.data) {

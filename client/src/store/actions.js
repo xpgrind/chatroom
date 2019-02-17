@@ -62,17 +62,19 @@ export default {
                 )
                 .then(
                     json => {
-                        if (!json.available) {
-                            reject(new Error("Friend Not Found"))
+                        logger.debug("Json data is:", json)
+                        if (!json.success) {
+                            reject(new Error(json.message))
                         } else {
                             logger.debug("Friend request sent")
                             console.log("Adding friend succeeded")
                             dispatch("loadFriendList")
-                            resolve()
+                            resolve(json)
                         }
-                    }).catch(error => {
+                    })
+                .catch(error => {
                     logger.warn("Adding failed", error)
-                    reject(new Error("Friend exists in your list already !"))
+                    reject(error)
                 })
         })
     },
@@ -83,6 +85,7 @@ export default {
     },
 
     clearFriends({ commit }) {
+        Vue.cookie.delete("friend")
         commit("clearFriends")
     },
 
@@ -161,24 +164,24 @@ export default {
                 })
         })
     },
-    uploadFile({ state, commit }, { path }) {
-        const url = API_URL + "/check_path"
-        return new Promise((resolve, reject) => {
-            axios
-                .post(url, { path })
-                .then(
-                    (reponse) => { return response.data },
-                )
-                .then(json => {
-                    if (!json) {
-                        reject(new Error("No reply from server"))
-                    }
-                    resolve(json)
-                })
-                .catch(error => {
-                    logger.warn("Picture Path failed", error)
-                    reject(error)
-                })
-        })
-    }
+    // uploadFile({ state, commit }, { path }) {
+    //     const url = API_URL + "/check_path"
+    //     return new Promise((resolve, reject) => {
+    //         axios
+    //             .post(url, { path })
+    //             .then(
+    //                 (reponse) => { return response.data },
+    //             )
+    //             .then(json => {
+    //                 if (!json) {
+    //                     reject(new Error("No reply from server"))
+    //                 }
+    //                 resolve(json)
+    //             })
+    //             .catch(error => {
+    //                 logger.warn("Picture Path failed", error)
+    //                 reject(error)
+    //             })
+    //     })
+    // }
 }

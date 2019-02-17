@@ -1,16 +1,12 @@
 <template>
     <div id="chat" class="container">
-        <h2>Friendship</h2>
-        <img src="/static/pig5.png" width="200px" height="180px">
-         <h5>Input his/her username: <input type="text" v-model="friend"></h5>
-         <img class="c" src="/static/profile.png" width="100px" height="100px">
-          <button type="button" class="d">Upload profile picture</button>
+        <button @click="loadFriends()">Load Friendslist</button>
+        <p>Friends: </p>
+        <div v-show="see" v-for="friend in friendList" :key="friend">{{friend}}</div>
+        <h5>Input his/her username: <input type="text" v-model="friend"></h5>
         <button @click="addFriend()">Add Friend</button>
         <p :style="color1">{{ message1 }}</p>
-        <button @click="loadFriends()">Load Friendslist</button>
-        <h4>Your Friends: </h4>
-        <div v-show="see" v-for="friend in friendList" :key="friend">{{friend}}</div>
-        <button class="e">Open Chat Room</button>
+        <button>Clear Friends</button>
     </div>
 </template>
 

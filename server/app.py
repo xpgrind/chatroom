@@ -93,7 +93,7 @@ def login(db_session):
         }), 403
 
 
-@chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True, requires_login=True)
+@chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True)
 def addfriends(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
@@ -101,23 +101,30 @@ def addfriends(db_session):
     friend_name = json_data.get('new_friend')
 
     if not friend_name:
-        print("Invalid Input")
+        print("You must specify friend name")
         return flask.jsonify({
             "success": False,
-            "available": False
-        })
+            "message": "You must specify friend name"
+        }), 400
 
     found_user = db_session.query(Account).filter_by(username=friend_name).first()
-
     if found_user:
         friend_id = found_user.id
+        if user_id == friend_id:
+            print("You cannot add yourself")
+            return flask.jsonify({
+                "success": False,
+                "message": "You cannot add yourself"
+            }), 400
+
         friendship = db_session.query(Friend).filter_by(user_id=user_id, friend_id=friend_id).first()
         if friendship:
             print("You have already added {}".format(friend_name))
             return flask.jsonify({
-                "success": True,
-                "available": False,
+                "success": False,
+                "message": "You already addeded" + friend_name,
             }), 400
+
         else:
             new_friend = Friend(
                 user_id=user_id,
@@ -128,13 +135,13 @@ def addfriends(db_session):
             print("Succeeded in adding {} as a friend of {}".format(friend_id, user_id))
             return flask.jsonify({
                 "success": True,
-                "available": True,
+                "message": "Adding friend succeeded",
             }), 200
     else:
         print("Friend Not Found")
         return flask.jsonify({
-            "success": True,
-            "available": False,
+            "success": False,
+            "message": "Friend Not Found",
         })
 
 
@@ -159,13 +166,17 @@ def friendsList(db_session):
         "friends": friends,
     }), 200
 
-@chatroom.route('/upload_profile', methods=["OPTIONS", "POST"], db=True, requires_login=True)
-def upload_profile(db_session):
+# @chatroom.route('/upload_profile', methods=["OPTIONS", "POST"], db=True, requires_login=True)
+# def upload_profile(db_session):
+#     json_data = flask.request.json
+#     print("Data: {}".format(json_data))
+#     pic = json_data.get('picPath')
+
+
+@chatroom.route('/clear_friends', methods=["OPTIONS", "POST"], db=True)
+def clear_friends(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    pic = json_data.get('picPath')
-
-
 
 
 @chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)

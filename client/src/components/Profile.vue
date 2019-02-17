@@ -72,11 +72,11 @@ export default {
             if (file && fileObj) {
                 const dataURl = windowURL.createObjectURL(fileObj)
                 img.setAttribute('src', dataURl)
+                console.log("upload profile pic" + dataURl)
             }
-            console.log("upload profile pic" + dataURl)
             this.$store
                 .dispatch("uploadPic", {
-                    path: dataURl
+                    // path: dataURl
                 })
                 .then(
                     (json) => {
