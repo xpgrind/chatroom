@@ -57,15 +57,13 @@ export default {
                 })
                 .then(
                     (json) => {
-                        if (json) {
-                            this.message1 = "Adding Friend Failed"
-                        } else {
-                            this.color1 = "color:purple"
-                            this.message1 = "Adding Friend Succeeded !"
-                        }
-                    }, err => {
-                        logger.warn("Failed", err)
-                        this.message1 = '' + err
+                        logger.debug("addFriend success, got json:", json)
+                        this.color1 = "color:purple"
+                        this.message1 = "Adding Friend Succeeded !"
+                    },
+                    (error) => {
+                        logger.warn("addFriend Failed", error, "response", error.response)
+                        this.message1 = '' + error.response.data.message
                         this.color1 = "color:red"
                     }
                 )

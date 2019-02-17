@@ -122,7 +122,7 @@ def addfriends(db_session):
             print("You have already added {}".format(friend_name))
             return flask.jsonify({
                 "success": False,
-                "message": "You already addeded" + friend_name,
+                "message": "You already addeded " + friend_name
             }), 400
 
         else:
@@ -142,7 +142,7 @@ def addfriends(db_session):
         return flask.jsonify({
             "success": False,
             "message": "Friend Not Found",
-        })
+        }), 400
 
 
 @chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True, requires_login=True)

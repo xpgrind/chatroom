@@ -58,24 +58,19 @@ export default {
                 .post(url, { user_id: state.userID, token: state.token, new_friend: newFriend })
                 .then(
                     (response) => { return response.data },
-                    (error) => { console.log("Error!", error) }
+                    (error) => {
+                        console.log("Error!", error.response)
+                        logger.debug("addFriend returning error:", error, "reponse is", error.response)
+                        reject(error)
+                    }
                 )
                 .then(
                     json => {
-                        logger.debug("Json data is:", json)
-                        if (!json.success) {
-                            reject(new Error(json.message))
-                        } else {
-                            logger.debug("Friend request sent")
-                            console.log("Adding friend succeeded")
-                            dispatch("loadFriendList")
-                            resolve(json)
-                        }
-                    })
-                .catch(error => {
-                    logger.warn("Adding failed", error)
-                    reject(error)
-                })
+                        logger.debug("addFriend returning success:, json is", json)
+                        dispatch("loadFriendList")
+                        resolve(json)
+                    }
+                )
         })
     },
 
