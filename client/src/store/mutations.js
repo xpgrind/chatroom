@@ -31,8 +31,4 @@ export default {
         state.friends = friends
     },
 
-    clearFriends(state) {
-        logger.debug("Clear Username")
-        state.friends = null
-    }
 }

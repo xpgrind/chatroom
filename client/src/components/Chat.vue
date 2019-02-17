@@ -3,10 +3,12 @@
         <button @click="loadFriends()">Load Friendslist</button>
         <p>Friends: </p>
         <div v-show="see" v-for="friend in friendList" :key="friend">{{friend}}</div>
-        <h5>Input his/her username: <input type="text" v-model="friend"></h5>
-        <button @click="addFriend()">Add Friend</button>
-        <p :style="color1">{{ message1 }}</p>
-        <button>Clear Friends</button>
+        <h5>Input his/her username: <input type="text" v-model="friend1"></h5>
+        <button @click="addFriend()" >Add Friend</button>
+        <p :style="color1" v-show="seeMsg1">{{ message1 }}</p>
+        <h5>Delete this person: <input type="text" v-model="friend2"></h5>
+        <button @click="clearFriend()">Delete Friend</button>
+        <p :style="color1" v-show="seeMsg2">{{ message2 }}</p>
     </div>
 </template>
 
@@ -20,10 +22,15 @@ export default {
     data () {
         return {
             title: 'Chat',
-            friend: '',
+            friend1: '',
+            friend2: '',
             message1: '',
+            message2: '',
             color1: '',
-            see: false
+            color2: '',
+            see: false,
+            seeMsg1: false,
+            seeMsg2: false
         }
     },
     computed: {
@@ -33,27 +40,32 @@ export default {
     },
     methods: {
         clearFriend() {
-            console.log("Clearing friends List ")
+            this.seeMsg2 = true
+            console.log("Adding a friend " + this.friend2)
             this.$store
-                .dispatch("clearFriends")
+                .dispatch("deleteFriend", {
+                    friend: this.friend2,
+                })
                 .then(
                     (json) => {
-                        if (json) {
-                            this.message2 = "Loading FriendList"
-                        } else {
-                            this.message2 = "No Friend"
-                        }
-                    }, err => {
-                        this.message2 = "failed: " + err
+                        logger.debug("deleteFriend success, got json:", json)
+                        this.color2 = "color:purple"
+                        this.message2 = "Deleting Friend Succeeded !"
+                    },
+                    (error) => {
+                        logger.warn("addFriend Failed", error, "response", error.response)
+                        this.message2 = '' + error.response.data.message
+                        this.color2 = "color:red"
                     }
                 )
         },
 
         addFriend() {
-            console.log("Adding a friend " + this.friend)
+            this.seeMsg1 = true
+            console.log("Adding a friend " + this.friend1)
             this.$store
                 .dispatch("addFriend", {
-                    newFriend: this.friend,
+                    newFriend: this.friend1,
                 })
                 .then(
                     (json) => {

@@ -144,6 +144,55 @@ def addfriends(db_session):
             "message": "Friend Not Found",
         }), 400
 
+@chatroom.route('/friends/delete', methods=["OPTIONS", "POST"], db=True)
+def deletefriends(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    user_id = json_data.get('user_id')
+    friend_name = json_data.get('friend')
+
+    if not friend_name:
+        print("You must specify friend name")
+        return flask.jsonify({
+            "success": False,
+            "message": "You must specify friend name"
+        }), 400
+
+    found_user = db_session.query(Account).filter_by(username=friend_name).first()
+
+    if found_user:
+        friend_id = found_user.id
+        if user_id == friend_id:
+            print("You cannot delete yourself")
+            return flask.jsonify({
+                "success": False,
+                "message": "You cannot delete yourself"
+            }), 400
+
+        friendship = db_session.query(Friend).filter_by(user_id=user_id, friend_id=friend_id).first()
+
+        if friendship:
+            db_session.query(Friend).filter_by(user_id=user_id, friend_id=friend_id).delete()
+            db_session.commit()
+            print("Succeeded in deleting {} as a friend of {}".format(friend_id, user_id))
+            return flask.jsonify({
+                "success": True,
+                "message": "Deleting friend succeeded",
+            }), 200
+
+        else:
+            print("Failed in deleting {} as a friend of {}".format(friend_id, user_id))
+            return flask.jsonify({
+                "success": False,
+                "message": "No this friend exists in your list",
+            }), 400
+    else:
+        print("Friend Not Found")
+        return flask.jsonify({
+            "success": False,
+            "message": "Friend Not Found",
+        }), 400
+
 
 @chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True, requires_login=True)
 def friendsList(db_session):
@@ -157,6 +206,7 @@ def friendsList(db_session):
 
     prepared_statement = text('select account.username from friend inner join account on friend.friend_id = account.id where friend.user_id = :my_user_id;')
     friend_rows = db_session.execute(prepared_statement, {'my_user_id': user_id})
+
     for row in friend_rows:
         username = row[0]
         friends.append(username)

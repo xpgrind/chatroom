@@ -79,9 +79,28 @@ export default {
         commit("clearLogin")
     },
 
-    clearFriends({ commit }) {
-        Vue.cookie.delete("friend")
-        commit("clearFriends")
+    deleteFriend({ state, commit, dispatch }, {friend}) {
+        logger.debug("deleteFriend, state.user_id = ", state.userID)
+        const url = API_URL + "/friends/delete"
+        return new Promise((resolve, reject) => {
+            axios
+                .post(url, { user_id: state.userID, token: state.token, friend: friend })
+                .then(
+                    (response) => { return response.data },
+                    (error) => {
+                        console.log("Error!", error.response)
+                        logger.debug("deleteFriend returning error:", error, "reponse is", error.response)
+                        reject(error)
+                    }
+                )
+                .then(
+                    json => {
+                        logger.debug("deleteFriend returning success:, json is", json)
+                        dispatch("loadFriendList")
+                        resolve(json)
+                    }
+                )
+        })
     },
 
     registerUser({ state, commit }, { newEmail, newUsername, newPassword }) {
