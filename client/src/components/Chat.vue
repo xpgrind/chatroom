@@ -1,14 +1,26 @@
 <template>
-    <div id="chat" class="container">
-        <button @click="loadFriends()">Load Friendslist</button>
-        <p>Friends: </p>
-        <div v-show="see" v-for="friend in friendList" :key="friend">{{friend}}</div>
-        <h5>Input his/her username: <input type="text" v-model="friend1"></h5>
-        <button @click="addFriend()" >Add Friend</button>
-        <p :style="color1" v-show="seeMsg1">{{ message1 }}</p>
-        <h5>Delete this person: <input type="text" v-model="friend2"></h5>
-        <button @click="clearFriend()">Delete Friend</button>
-        <p :style="color1" v-show="seeMsg2">{{ message2 }}</p>
+    <div id="chat">
+        <h2>Welcome,   {{ username }}   !</h2>
+            <div class="container">
+            <img class="a" :src="picture" width="100px" height="100px">
+            <button @click="loadFriends()">Load Friendslist</button>
+            <p>Friends: </p>
+            <div v-show="see" v-for="friend in friendList" :key="friend">{{friend}}</div>
+            <h5>Input his/her username: <input type="text" v-model="friend1"></h5>
+            <button @click="addFriend()" >Add Friend</button>
+            <p :style="color1">{{ message1 }}</p>
+            <h5>Delete this person: <input type="text" v-model="friend2"></h5>
+            <button @click="clearFriend()">Delete Friend</button>
+            <p :style="color1">{{ message2 }}</p>
+            <div>
+            <router-link to="/profile">
+                <a>Profile Page</a>
+        </router-link>
+            </div>
+            <div>
+            <button>Log Out</button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -19,6 +31,7 @@ const logger = Logger.get("actions.js")
 
 export default {
     name: 'Chat',
+
     data () {
         return {
             title: 'Chat',
@@ -29,18 +42,23 @@ export default {
             color1: '',
             color2: '',
             see: false,
-            seeMsg1: false,
-            seeMsg2: false
         }
     },
     computed: {
         friendList() {
             return this.$store.state.friends
+        },
+
+        username() {
+            return this.$store.state.username
+        },
+
+        picture() {
+            return this.$store.state.photo
         }
     },
     methods: {
         clearFriend() {
-            this.seeMsg2 = true
             console.log("Adding a friend " + this.friend2)
             this.$store
                 .dispatch("deleteFriend", {
@@ -61,7 +79,6 @@ export default {
         },
 
         addFriend() {
-            this.seeMsg1 = true
             console.log("Adding a friend " + this.friend1)
             this.$store
                 .dispatch("addFriend", {
@@ -80,12 +97,13 @@ export default {
                     }
                 )
         },
+
         loadFriends() {
             console.log("Loading friends List ")
             this.see = true
             this.$store
                 .dispatch("loadFriendList")
-        }
+        },
     }
 }
 </script>
@@ -99,6 +117,12 @@ img{
 span{
     margin-left: 30px;
 }
+
+.a {
+    position: relative;
+    left: 600px;
+    top:100px;
+}
 .c{
     position: absolute;
     left: 600px;
@@ -109,5 +133,12 @@ span{
     position: absolute;
     bottom: 100px;
     left: 580px;
+}
+
+h2, h5{
+    color:rgb(53, 255, 255);
+}
+div{
+    margin-top: 15px;
 }
 </style>

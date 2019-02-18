@@ -30,17 +30,12 @@
       <a href style="color:blue">Forget Password?</a>
       <br>
       <br>
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+      <button type="submit">Login</button>
       {{ message1 }}
       &nbsp;&nbsp;
       <router-link to="/">
         <a>Home Page</a>
       </router-link>
-      <span>
-      <router-link to="/profile">
-        <a>Profile Page</a>
-      </router-link>
-      </span>
     </form>
   </div>
 </template>
@@ -60,9 +55,10 @@ export default {
             password: null,
             redirect: prevQuery.redirect ? prevQuery.redirect : "/chat",
             message: "",
-            message1: ""
+            message1: "",
         }
     },
+
     methods: {
         login() {
             logger.log("Logging in...")
@@ -73,7 +69,6 @@ export default {
                 })
                 .then(
                     (response) => {
-                        this.message1 = "Login Succeeded"
                         this.$router.push({ path: this.redirect })
                     }, error => {
                         logger.warn("Login.Vue Login Failed", error.response)

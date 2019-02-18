@@ -36,7 +36,7 @@
       <span>
       <router-link style="text-align:center" to="/">
         <a>Home Page</a>
-    </router-link>
+      </router-link>
       </span>
     </form>
   </div>

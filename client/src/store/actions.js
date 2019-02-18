@@ -50,6 +50,23 @@ export default {
         })
     },
 
+    loadUserInfo({ state, commit }) {
+        logger.debug("Loading User Info")
+        const url = API_URL + "/userInfo"
+        axios
+            .post(url, { user_id: state.userID, token: state.token })
+            .then(
+                (response) => { return response.data },
+                (error) => { console.log("Error!", error) }
+            )
+            .then(
+                json => {
+                    console.log("Getting Info succeeded")
+                    commit("setInfo", {username: json.username})
+                }
+            )
+    },
+
     addFriend({ state, commit, dispatch }, {newFriend}) {
         logger.debug("addFriend, state.user_id = ", state.userID)
         const url = API_URL + "/friends/add"

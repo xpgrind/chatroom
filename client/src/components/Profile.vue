@@ -1,21 +1,19 @@
 <template>
-    <div id="Profile" class="container" @submit.prevent="userProfile">
-        <div class="b">
+    <div id="Profile" class="container">
+        <form @submit.prevent="submitProfile">
             <img id="preview" src="/static/profile.png" width="120px" height="120px"/>
             <br>
             <h6>Upload Your profile pic:</h6>
             <input id="pop_file" type="file" accept=".jpg,.jpeg,.png" v-on:change="uploadFile($event)" name="fileTrans" ref="file" value=""/>
-        </div>
-        <form>
-            Gender:<br>
-            <input type="radio" name="gender" value="male"> Male
+            <br><br> Gender: <br>
+            <input type="radio" name="gender" value="male" v-model="gender"> Male
             <span id="c"><input type="radio" name="gender" value="female">Female</span>
             <span id="c"><input type="radio" name="gender" value="other"> Other</span>
             <br><br>
             Age:<br>
-            <input type="number" name="age" value="20">
+            <input type="number" name="age" value="20" v-model="age">
             <br><br>Constallation:
-            <br><input list="constellations" name="constellation">
+            <br><input list="constellations" name="constellation" v-model="constellation">
             <datalist id="constellations">
                 <option value="Auqarius"></option>
                 <option value="Sagittarius"></option>
@@ -30,21 +28,22 @@
                 <option value="Scorpio"></option>
                 <option value="Capricorn"></option>
             </datalist>
-
             <br><br>Birthday:
-            <br><input type="date" name="birth" value="">
+            <br><input type="date" name="birth" value="" v-model="birth">
             <br><br>Location:
-            <br><input type="text" name="location" value="">
+            <br><input type="text" name="location" value="" v-model="location">
             <h6>Set Your Personalized Signature: </h6>
-            <textarea cols="20" rows="6"></textarea>
+            <textarea cols="20" rows="6" v-model="signature"></textarea>
             <br><br>
             <button id="c" type="submit" value="Submit">Submit</button>
-            <span>
-            <router-link style="text-align:center" to="/">
-            <a>Home Page</a>
-            </router-link>
-            </span>
         </form>
+        <h3> {{ status }} </h3>
+        <router-link style="text-align:center" to="/">
+        <a>Home Page</a>
+        </router-link>
+        <div>
+        <button>Log Out</button>
+        </div>
     </div>
 </template>
 
@@ -59,6 +58,14 @@ export default {
     data () {
         return {
             title: 'Profile',
+            // pic: '',
+            gender: '',
+            age: '',
+            birth: '',
+            constellation: '',
+            location: '',
+            signature: '',
+            status: 'Edit Your Profile'
         }
     },
     computed: {
@@ -90,25 +97,49 @@ export default {
                     }
                 )
         },
+        submitProfile () {
+            console.log("submitProfile")
+            this.$store
+                .dispatch("submitProfile", {
+                    // pic: this.pic,
+                    gender: this.gender,
+                    age: this.age,
+                    birth: this.birth,
+                    constellation: this.constellation,
+                    location: this.location,
+                    signature: this.signature
+                })
+
+                .then(
+                    () => {
+                        this.status = "Saved !!!"
+                    },
+                    err => {
+                        this.c2 = "color:tomato"
+                        this.status = "Unsaved, try later "
+                    }
+                )
+        }
     }
 }
 </script>
 
 <style scoped>
 .container {
-  width: 600px;
-  height: 500px;
+  width: 700px;
+  height: 700px;
 }
 
 #c,h6{
     color:rgb(50, 122, 204)
 }
 
-.b{
-    position: absolute;
-    margin-top:0px;
-    margin-right: 120px;
-    color: rgb(50, 122, 204)
+div{
+    margin-top:10px;
+}
+
+a{
+    color:coral;
 }
 
 form {

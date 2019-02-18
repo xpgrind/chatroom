@@ -22,7 +22,6 @@ export default new Router({
             name: 'Chat',
             component: Chat
         },
-
         {
             path: '/',
             name: 'HelloWorld',

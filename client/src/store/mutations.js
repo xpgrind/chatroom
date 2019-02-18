@@ -6,7 +6,7 @@ const logger = Logger.get("mutations.js")
 
 export default {
     setLogin(state, { userID, token }) {
-        logger.debug("Set userID:", userID, "token", token)
+        logger.debug("Set userID:", userID, "token:", token)
         state.userID = userID
         state.token = token
         if (window.localStorage) {
@@ -31,4 +31,9 @@ export default {
         state.friends = friends
     },
 
+    setInfo(state, { username, photo }) {
+        logger.debug("Get Person Info", name)
+        state.username = username
+        state.photo = photo
+    },
 }

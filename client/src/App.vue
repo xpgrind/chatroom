@@ -11,7 +11,6 @@ import Register from '@/components/Register'
 import store from "@/store/index"
 // import Vue from "@/main"
 // const imgFolder = "/static/"
-
 export default {
     name: 'App',
 
@@ -23,18 +22,27 @@ export default {
     data () {
         return {
         }
-    }
+    },
+
+    created:
+        function() {
+            console.log("Loading Perosnal Info ")
+            this.$store
+                .dispatch("loadUserInfo")
+        }
 }
 </script>
 
 <style>
 *{
-  color:rgb(77, 202, 52);
+  color:rgb(107, 224, 84);
   font-family: Verdana, sans-serif;
 }
+
 body{
-    background-color: bisque;
+    background-color: rgb(95, 128, 201);
 }
+
 form{
   margin-bottom: 100px;
   margin-left: 300px;

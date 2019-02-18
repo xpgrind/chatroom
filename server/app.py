@@ -193,8 +193,7 @@ def deletefriends(db_session):
             "message": "Friend Not Found",
         }), 400
 
-
-@chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True, requires_login=True)
+@chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True)
 def friendsList(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
@@ -216,17 +215,26 @@ def friendsList(db_session):
         "friends": friends,
     }), 200
 
-# @chatroom.route('/upload_profile', methods=["OPTIONS", "POST"], db=True, requires_login=True)
+@chatroom.route('/userInfo', methods=["OPTIONS", "POST"], db=True)
+def getInfo(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    user_id = json_data.get('user_id')
+    user_name = db_session.query(Account).filter_by(id=user_id).first().username
+
+    return flask.jsonify({
+        "success": True,
+        "username": user_name
+    }), 200
+
+# @chatroom.route('/upload_profile', methods=["OPTIONS", "POST"], db=True)
 # def upload_profile(db_session):
 #     json_data = flask.request.json
 #     print("Data: {}".format(json_data))
-#     pic = json_data.get('picPath')
-
-
-@chatroom.route('/clear_friends', methods=["OPTIONS", "POST"], db=True)
-def clear_friends(db_session):
-    json_data = flask.request.json
-    print("Data: {}".format(json_data))
+#     user_id = json_data.get('user_id')
+#     pic_path = db_session.query(Profile_Pic).get(username)
+#     prepared_statement = text('select account.id from account inner join profile_pic on profile_pic.user_id = account.id where account.id = :my_user_id;')
+#     friend_rows = db_session.execute(prepared_statement, {'my_user_id': user_id})
 
 
 @chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)
