@@ -16,5 +16,6 @@ export default {
     friends: [],
     token: window.localStorage.getItem("chatroom_token") || null,
     userID: loadUserID(),
+    message: [],
     photo: ''
 }

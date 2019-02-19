@@ -27,8 +27,7 @@ export default {
     created:
         function() {
             console.log("Loading Perosnal Info ")
-            this.$store
-                .dispatch("loadUserInfo")
+            this.$store.dispatch("loadUserInfo")
         }
 }
 </script>

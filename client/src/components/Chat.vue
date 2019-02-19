@@ -2,7 +2,7 @@
     <div id="chat">
         <h2>Welcome,   {{ username }}   !</h2>
             <div class="container">
-            <img class="a" :src="picture" width="100px" height="100px">
+            <!-- <img class="a" :src="picture" width="100px" height="100px"> -->
             <button @click="loadFriends()">Load Friendslist</button>
             <p>Friends: </p>
             <div v-show="see" v-for="friend in friendList" :key="friend">{{friend}}</div>
@@ -13,9 +13,11 @@
             <button @click="clearFriend()">Delete Friend</button>
             <p :style="color1">{{ message2 }}</p>
             <div>
-            <router-link to="/profile">
+            <!-- <router-link to="/profile">
                 <a>Profile Page</a>
-        </router-link>
+            </router-link> -->
+            <input type="text" name="msg">
+            <button @click="sendMsg()">Send</button>
             </div>
             <div>
             <button>Log Out</button>
@@ -101,9 +103,13 @@ export default {
         loadFriends() {
             console.log("Loading friends List ")
             this.see = true
-            this.$store
-                .dispatch("loadFriendList")
+            this.$store.dispatch("loadFriendList")
         },
+
+        sendMsg() {
+            console.log("Sending Message to friends")
+            this.$store.dispatch("sendMessage")
+        }
     }
 }
 </script>

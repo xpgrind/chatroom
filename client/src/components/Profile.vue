@@ -116,7 +116,7 @@ export default {
                     },
                     err => {
                         this.c2 = "color:tomato"
-                        this.status = "Unsaved, try later "
+                        this.status = "Unsaved, try later " + err
                     }
                 )
         }

@@ -36,4 +36,9 @@ export default {
         state.username = username
         state.photo = photo
     },
+
+    sendMessage(state, { message }) {
+        logger.debug("Sending Messages:", message)
+        state.message = message
+    }
 }
