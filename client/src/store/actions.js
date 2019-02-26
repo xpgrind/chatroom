@@ -120,11 +120,11 @@ export default {
         })
     },
 
-    sendMsg ({ state, commit, dispatch }, { newMsg, receiverID, clientTime }) {
+    sendMsg ({ state, commit, dispatch }, { newMsg, receiver, clientTime }) {
         logger.debug("send message ", state.userID)
         const url = API_URL + "/sendmsg"
         axios
-            .post(url, { user_id: state.userID, token: state.token, message: newMsg, receiver_id: receiverID, client_time: clientTime })
+            .post(url, { user_id: state.userID, token: state.token, message: newMsg, receiver: receiver, client_time: clientTime })
             .then(
                 (response) => { return response.data },
                 (error) => {

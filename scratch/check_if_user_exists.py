@@ -5,14 +5,14 @@ from sqlalchemy.orm import relationship
 from chatroom.db.session import get_session
 from chatroom.db.tables import Account
 
-userid = sys.argv[1]
+user = sys.argv[1]
 
 db_session = get_session()
 
-user_name = db_session.query(Account).filter_by(id=userid).first().username
+user_id = db_session.query(Account).filter_by(username=user).first().id
 
-if user_name is None:
+if user_id is None:
     print("User not in database")
 
 else:
-    print(user_name)
+    print(user_id)

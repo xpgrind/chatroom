@@ -47,6 +47,7 @@ const logger = Logger.get("Login")
 
 export default {
     name: "Login",
+
     data() {
         const prevQuery = this.$route.query
         return {

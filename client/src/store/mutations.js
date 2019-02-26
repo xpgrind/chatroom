@@ -36,8 +36,8 @@ export default {
         state.username = username
     },
 
-    setMsg(state, { message }) {
-        logger.debug("Set Message:", message)
-        state.message = message
+    setMsg(state, { messages }) {
+        logger.debug("Set Message:", messages)
+        state.messages = messages
     }
 }

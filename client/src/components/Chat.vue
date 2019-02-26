@@ -52,10 +52,11 @@ export default {
             return this.$store.state.username
         },
 
-        picture() {
-            return this.$store.state.photo
-        }
+        // picture() {
+        //     return this.$store.state.photo
+        // }
     },
+
     methods: {
         clearFriend() {
             console.log("Adding a friend " + this.friend2)

@@ -1,10 +1,9 @@
 <template>
     <div id="room" class="container">
         <input v-model="message">
-        <button @click="send()">Send</button>
         <p>To: </p>
-        <input v-bind="friend">
-        <p>{{ message }}</p>
+        <input v-model="friend">
+        <button @click="send()">Send</button>
 
     </div>
 </template>
@@ -21,7 +20,8 @@ export default {
         return {
             title: 'Room',
             message: '',
-            friend: ''
+            friend: '',
+            clientTime: ''
         }
     },
     computed: {
@@ -29,10 +29,12 @@ export default {
     methods: {
         send() {
             console.log("Sending a message " + this.message)
+            let date = new Date()
             this.$store
                 .dispatch("sendMsg", {
                     newMsg: this.message,
-                    receiver_id: this.friend
+                    receiver: this.friend,
+                    clientTime: date.getTime()
                 })
                 .then(
                     (json) => {

@@ -210,10 +210,13 @@ def sendMsg(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     sender_id = json_data.get('user_id')
-    message = json_data.get('new_message')
-    receiver_id = json_data.get('receiver_id')
+    message = json_data.get('message')
+    receiver = json_data.get('receiver')
     client_time = json_data.get('client_time')
-    server_time = datetime.utcnow()
+    server_time = datetime
+    import pdb; from pprint import pprint; pdb.set_trace()
+
+    receiver_id = db_session.query(Account).filter_by(username=receiver).first().id
 
     new_message = Message(
         receiver_id=receiver_id,

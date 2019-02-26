@@ -14,6 +14,11 @@ import store from "@/store/index"
 export default {
     name: 'App',
 
+    provide() {
+        return {
+            reload: this.reload
+        }
+    },
     components: {
         Login,
         Register,
@@ -23,7 +28,6 @@ export default {
         return {
         }
     },
-
     created:
         function() {
             console.log("Loading Perosnal Info ")
