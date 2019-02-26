@@ -139,7 +139,7 @@ export default {
             )
     },
 
-    registerUser({ newEmail, newUsername, newPassword }) {
+    registerUser(vueParams, { newEmail, newUsername, newPassword }) {
         const url = API_URL + "/register_submit"
         return new Promise((resolve, reject) => {
             axios
@@ -150,7 +150,7 @@ export default {
                         return response.data
                     },
                     (error) => {
-                        console.log("Register Error!", error)
+                        reject(error)
                     }
                 )
                 .then(

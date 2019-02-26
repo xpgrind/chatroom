@@ -317,9 +317,14 @@ def register_submit(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
 
-    new_email = json_data.get('newEmail')
-    new_username = json_data.get('newUsername')
-    new_password = json_data.get('newPassword')
+    try:
+        new_email = json_data['newEmail']
+        new_username = json_data['newUsername']
+        new_password = json_data['newPassword']
+    except KeyError as e:
+        assert False, "You must set {}".format(e)
+
+    assert new_password, "Password cannot be empty"
 
     password_check = zxcvbn(new_password, user_inputs=[new_email, new_username])
     score = password_check['score']
@@ -329,10 +334,7 @@ def register_submit(db_session):
     if len(new_password) < 8 or password_check.get('warning'):
         print("Too weak: Score `{}` password_message `{}`".format(
             score, password_message))
-        return flask.jsonify({
-            "success": False,
-            "message": "Password too weak. " + password_message
-        })
+        assert False, "Weak password: " + password_message
 
     try:
         hash_method = 'pbkdf2:sha256:50000'

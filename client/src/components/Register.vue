@@ -124,8 +124,13 @@ export default {
                         }, 3000)
                     },
                     err => {
+                        console.log("Error is", err)
                         this.c2 = "color:tomato"
-                        this.registerStatus = "" + err
+                        if (err.response) {
+                            this.registerStatus = "" + err.response.data.message
+                        } else {
+                            this.registerStatus = "" + err
+                        }
                     }
                 )
         }

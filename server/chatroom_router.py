@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 from functools import wraps
 from sqlalchemy.sql import text
 from pprint import pprint
+import traceback
 
 from chatroom.db.session import get_session
 
@@ -94,18 +95,40 @@ class ChatroomRouter:
 
                     ### End Validate token
 
+                response = None
+
                 # Token verification succeeded, continue:
                 print("Starting Call to function " + f.__name__)
-                if create_db_session:
-                    # Any arguments to pass to the route function can be passed here.
-                    # I am passing the database so that a new connection is not required every time.
-                    res = f(db_session)
-                else:
-                    res = f()
+                try:
+                    if create_db_session:
+                        # Any arguments to pass to the route function can be passed here.
+                        # I am passing the database so that a new connection is not required every time.
+                        res = f(db_session)
+                    else:
+                        res = f()
+                except (KeyboardInterrupt, SystemExit):
+                    print("Quitting")
+                    raise
+                except AssertionError as e:
+                    print("Assertion Error in route: {}".format(f.__name__))
+                    print("Failed Assertion: {}".format(e))
+                    res = flask.jsonify({
+                        "success": False,
+                        "message": str(e)
+                    }), 400
+                except Exception as e: #pylint: disable=broad-except
+                    print("Uncaught exception in route: {}".format(f.__name__))
+                    print("Type: {}, Exception: {}".format(type(e), e))
+                    traceback.print_exc()
+                    res = flask.jsonify({
+                        "success": False,
+                        "message": "Unhandled exception"
+                    }), 500
 
                 # Allow returning like return response or return response, status_code
                 if isinstance(res, tuple):
                     response = res[0]
+                    response.status_code = res[1]
                 else:
                     response = res
 
@@ -116,7 +139,7 @@ class ChatroomRouter:
                 if db_session is not None:
                     db_session.close()
 
-                print("Done Call to function " + f.__name__, "set headers: {}".format(response.headers))
+                print("[{}] Done Call to function: {}".format(response.status_code, f.__name__))
                 return res
 
             # This bit right here is what is required to add the route to flask in the end.
