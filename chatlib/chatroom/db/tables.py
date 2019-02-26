@@ -37,3 +37,12 @@ class Profile_Pic(Base):
     user = Column(Integer, ForeignKey("account.id"), nullable=False)
     path = Column(TEXT, nullable=False)
     name = Column(String(30))
+
+class Message(Base):
+    __tablename__ = 'message'
+    message_id = Column(Integer, primary_key=True)
+    message = Column(TEXT)
+    receiver_id = Column(Integer, nullable=False)
+    sender_id = Column(Integer, nullable=False)
+    client_time = Column(TIMESTAMP)
+    server_time = Column(TIMESTAMP)

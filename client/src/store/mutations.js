@@ -31,9 +31,13 @@ export default {
         state.friends = friends
     },
 
-    setInfo(state, { username, photo }) {
+    setInfo(state, { username }) {
         logger.debug("Get Person Info", name)
         state.username = username
-        state.photo = photo
     },
+
+    setMsg(state, { message }) {
+        logger.debug("Set Message:", message)
+        state.message = message
+    }
 }

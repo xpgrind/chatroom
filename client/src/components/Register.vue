@@ -58,7 +58,7 @@ export default {
             registerStatus: "",
             c: "",
             c1: "",
-            c2: "color:purple",
+            c2: "color:white",
             redirect: prevQuery.redirect ? prevQuery.redirect : "/profile",
         }
     },
@@ -117,6 +117,7 @@ export default {
                 })
                 .then(
                     () => {
+                        this.c2 = "color:white"
                         this.registerStatus = "Register Succeeded, Go To Set Your Profile"
                         setTimeout(() => {
                             this.$router.push({ path: this.redirect })

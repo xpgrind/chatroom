@@ -12,6 +12,7 @@ from chatroom.db.tables import Account
 from chatroom.db.tables import Token
 from chatroom.db.tables import Friend
 from chatroom.db.tables import Profile_Pic
+from chatroom.db.tables import Message
 
 import secrets
 from datetime import datetime
@@ -184,7 +185,7 @@ def deletefriends(db_session):
             print("Failed in deleting {} as a friend of {}".format(friend_id, user_id))
             return flask.jsonify({
                 "success": False,
-                "message": "No this friend exists in your list",
+                "message": "This friend doesn't exist in your list",
             }), 400
     else:
         print("Friend Not Found")
@@ -215,6 +216,32 @@ def friendsList(db_session):
         "friends": friends,
     }), 200
 
+@chatroom.route('/sendmsg', methods=["OPTIONS", "POST"], db=True)
+def sendMsg(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    sender_id = json_data.get('user_id')
+    message = json_data.get('new_message')
+    receiver_id = json_data.get('receiver_id')
+    client_time = json_data.get('client_time')
+    server_time = datetime.utcnow()
+
+    new_message = Message(
+        receiver_id = receiver_id,
+        sender_id = sender_id,
+        message = message,
+        client_time = client_time,
+        server_time = server_time
+    )
+    db_session.add(new_message)
+    db_session.commit()
+    print("Succeeded in sending messages")
+    return flask.jsonify({
+        "success": True,
+        "message": "Sending messages succeeded",
+    }), 200
+
+
 @chatroom.route('/userInfo', methods=["OPTIONS", "POST"], db=True)
 def getInfo(db_session):
     json_data = flask.request.json
@@ -226,6 +253,7 @@ def getInfo(db_session):
         "success": True,
         "username": user_name
     }), 200
+
 
 # @chatroom.route('/upload_profile', methods=["OPTIONS", "POST"], db=True)
 # def upload_profile(db_session):
@@ -297,7 +325,7 @@ def format_password_message(password_check):
 
 
 @chatroom.route('/register_submit', methods=["OPTIONS", "POST"], db=True, requires_login=False)
-def register_submit(db_session):
+def register_submit(db_session) :
     json_data = flask.request.json
     print("Data: {}".format(json_data))
 

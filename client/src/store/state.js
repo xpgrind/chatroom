@@ -14,6 +14,7 @@ function loadUserID() {
 export default {
     username: '',
     friends: [],
+    message: '',
     token: window.localStorage.getItem("chatroom_token") || null,
     userID: loadUserID(),
     photo: ''

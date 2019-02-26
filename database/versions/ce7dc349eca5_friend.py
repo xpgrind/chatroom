@@ -1,7 +1,7 @@
 """firends
 
 Revision ID: ce7dc349eca5
-Revises: 8ecb94bf73ac
+Revises: eeabcbb77454
 Create Date: 2019-02-01 19:13:58.592145
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'ce7dc349eca5'
-down_revision = '8ecb94bf73ac'
+down_revision = 'eeabcbb77454'
 branch_labels = None
 depends_on = None
 

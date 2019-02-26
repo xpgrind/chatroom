@@ -67,7 +67,7 @@ export default {
             )
     },
 
-    addFriend({ state, commit, dispatch }, {newFriend}) {
+    addFriend({ state, dispatch }, {newFriend}) {
         logger.debug("addFriend, state.user_id = ", state.userID)
         const url = API_URL + "/friends/add"
         return new Promise((resolve, reject) => {
@@ -120,7 +120,26 @@ export default {
         })
     },
 
-    registerUser({ state, commit }, { newEmail, newUsername, newPassword }) {
+    sendMsg ({ state, commit, dispatch }, { newMsg, receiverID, clientTime }) {
+        logger.debug("send message ", state.userID)
+        const url = API_URL + "/sendmsg"
+        axios
+            .post(url, { user_id: state.userID, token: state.token, message: newMsg, receiver_id: receiverID, client_time: clientTime })
+            .then(
+                (response) => { return response.data },
+                (error) => {
+                    console.log("Error!", error.response)
+                    logger.debug("Sending Message returning error:", error, "reponse is", error.response)
+                }
+            )
+            .then(
+                json => {
+                    logger.debug("sending message returning success:, json is", json)
+                }
+            )
+    },
+
+    registerUser({ newEmail, newUsername, newPassword }) {
         const url = API_URL + "/register_submit"
         return new Promise((resolve, reject) => {
             axios
@@ -153,7 +172,7 @@ export default {
         })
     },
 
-    checkUsername({ state, commit }, { newUsername }) {
+    checkUsername({ newUsername }) {
         const url = API_URL + "/check_username"
         return new Promise((resolve, reject) => {
             axios
@@ -175,7 +194,7 @@ export default {
         })
     },
 
-    checkEmail({ state, commit }, { newEmail }) {
+    checkEmail({ newEmail }) {
         const url = API_URL + "/check_email"
         return new Promise((resolve, reject) => {
             axios

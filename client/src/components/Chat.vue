@@ -2,21 +2,20 @@
     <div id="chat">
         <h2>Welcome,   {{ username }}   !</h2>
             <div class="container">
-            <img class="a" :src="picture" width="100px" height="100px">
+            <!-- <img class="a" :src="picture" width="100px" height="100px"> -->
             <button @click="loadFriends()">Load Friendslist</button>
             <p>Friends: </p>
-            <div v-show="see" v-for="friend in friendList" :key="friend">{{friend}}</div>
+            <span v-show="see" v-for="friend in friendList" :key="friend">
+               <router-link to="/room">
+                    <a>{{ friend }} </a>
+                </router-link>
+            </span>
             <h5>Input his/her username: <input type="text" v-model="friend1"></h5>
             <button @click="addFriend()" >Add Friend</button>
             <p :style="color1">{{ message1 }}</p>
             <h5>Delete this person: <input type="text" v-model="friend2"></h5>
             <button @click="clearFriend()">Delete Friend</button>
-            <p :style="color1">{{ message2 }}</p>
-            <div>
-            <router-link to="/profile">
-                <a>Profile Page</a>
-        </router-link>
-            </div>
+            <p :style="color2">{{ message2 }}</p>
             <div>
             <button>Log Out</button>
             </div>
@@ -138,7 +137,13 @@ span{
 h2, h5{
     color:rgb(53, 255, 255);
 }
+
 div{
     margin-top: 15px;
+}
+
+.container{
+    width: 600px;
+    height: 300px;
 }
 </style>

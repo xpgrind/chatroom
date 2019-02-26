@@ -12,7 +12,7 @@
         autofocus
         @change="checkEmail"
       >
-      {{ message }}
+      <span :style="c1"> {{ message }}</span>
       <br>
       <br>
       <label for="inputPassword">Password:</label>
@@ -30,8 +30,8 @@
       <a href style="color:blue">Forget Password?</a>
       <br>
       <br>
-      <button type="submit">Login</button>
-      {{ message1 }}
+      <button type="submit" >Login</button>
+      <span :style="c2"> {{ message1 }} </span>
       &nbsp;&nbsp;
       <router-link to="/">
         <a>Home Page</a>
@@ -55,6 +55,8 @@ export default {
             password: null,
             redirect: prevQuery.redirect ? prevQuery.redirect : "/chat",
             message: "",
+            c1: "color: green",
+            c2: "color: green",
             message1: "",
         }
     },
@@ -71,6 +73,7 @@ export default {
                     (response) => {
                         this.$router.push({ path: this.redirect })
                     }, error => {
+                        this.c2 = "color: tomato"
                         logger.warn("Login.Vue Login Failed", error.response)
                         if (error.response && error.response.data) {
                             this.message1 = "failed: " + error.response.data.message
@@ -89,12 +92,13 @@ export default {
                 .then(
                     (json) => {
                         if (json.available) {
+                            this.c1 = "color: tomato"
                             this.message = "Email Not Found"
                         } else {
                             this.message = "Email Found"
                         }
                     }, err => {
-                        this.message = "failed: " + err
+                        this.message = "failed: "
                     }
                 )
         }
