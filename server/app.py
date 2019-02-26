@@ -1,48 +1,37 @@
-import json
-
-import flask
-from flask import Flask, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import IntegrityError
-from zxcvbn import zxcvbn
-from sqlalchemy.sql import text
-
-from chatroom.db.session import get_session
-from chatroom.db.tables import Account
-from chatroom.db.tables import Token
-from chatroom.db.tables import Friend
-from chatroom.db.tables import Profile_Pic
-from chatroom.db.tables import Message
-
 import secrets
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 import base64
 
-import pdb
+import flask
+from flask import Flask
+from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import text
+from zxcvbn import zxcvbn
+
+from chatroom.db.tables import Account, Token, Friend, Profile_Pic, Message
 from chatroom_router import ChatroomRouter, client_address
 
 app = Flask(__name__)
 
 chatroom = ChatroomRouter(app)
 
-@chatroom.route('/insecure', methods=["GET", "OPTIONS", "POST"], requires_login=False)
-def insecure_route():
-    response = flask.jsonify({"success": True})
-    return response
+# @chatroom.route('/insecure', methods=["GET", "OPTIONS", "POST"], requires_login=False)
+# def insecure_route():
+#     response = flask.jsonify({"success": True})
+#     return response
 
 
-@chatroom.route('/secure', methods=["GET", "OPTIONS", "POST"])
-def secure_route():
-    response = flask.jsonify({"success": True})
-    return response
+# @chatroom.route('/secure', methods=["GET", "OPTIONS", "POST"])
+# def secure_route():
+#     response = flask.jsonify({"success": True})
+#     return response
 
 
-@chatroom.route('/secure_needs_db', methods=["GET", "OPTIONS", "POST"], db=True)
-def secure_route_with_db(db_session):
-    response = flask.jsonify({"success": True})
-    return response
-
+# @chatroom.route('/secure_needs_db', methods=["GET", "OPTIONS", "POST"], db=True)
+# def secure_route_with_db(db_session):
+#     response = flask.jsonify({"success": True})
+#     return response
 
 @chatroom.route('/login', methods=["OPTIONS", "POST"], db=True, requires_login=False)
 def login(db_session):
@@ -227,11 +216,11 @@ def sendMsg(db_session):
     server_time = datetime.utcnow()
 
     new_message = Message(
-        receiver_id = receiver_id,
-        sender_id = sender_id,
-        message = message,
-        client_time = client_time,
-        server_time = server_time
+        receiver_id=receiver_id,
+        sender_id=sender_id,
+        message=message,
+        client_time=client_time,
+        server_time=server_time
     )
     db_session.add(new_message)
     db_session.commit()
@@ -292,22 +281,21 @@ def check_username(db_session):
 def check_email(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    new_email = json_data.get('newEmail')
+    new_email = json_data['newEmail']
     found_email = db_session.query(Account).filter_by(email=new_email).first()
 
     if found_email is None:
+        print("Email address Not Found")
         return flask.jsonify({
             "success": True,
             "available": True,
         })
-        print("Email address Not Found")
-
     else:
+        print("Email address Found")
         return flask.jsonify({
             "success": True,
             "available": False,
         })
-        print("Email address Found")
 
 
 def format_password_message(password_check):
@@ -325,7 +313,7 @@ def format_password_message(password_check):
 
 
 @chatroom.route('/register_submit', methods=["OPTIONS", "POST"], db=True, requires_login=False)
-def register_submit(db_session) :
+def register_submit(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
 
@@ -342,9 +330,9 @@ def register_submit(db_session) :
         print("Too weak: Score `{}` password_message `{}`".format(
             score, password_message))
         return flask.jsonify({
-        "success": False,
-        "message": "Password too weak. " + password_message
-    })
+            "success": False,
+            "message": "Password too weak. " + password_message
+        })
 
     try:
         hash_method = 'pbkdf2:sha256:50000'
@@ -362,8 +350,8 @@ def register_submit(db_session) :
         print("Succeeded")
 
         return flask.jsonify({
-        "success": True,
-        }),200
+            "success": True,
+        }), 200
 
     except IntegrityError:
         db_session.rollback()
@@ -382,9 +370,9 @@ def register_submit(db_session) :
             error_messages.append("Username in use")
 
         return flask.jsonify({
-        "success": False,
-        "message": "Account creation failed: " + ", ".join(error_messages)
-        }),200
+            "success": False,
+            "message": "Account creation failed: " + ", ".join(error_messages)
+        }), 200
 
 
 

@@ -84,7 +84,7 @@ export default {
                 )
         },
         checkEmail() {
-            console.log("Email is " + this.email)
+            console.log("Login.vue: Email is " + this.email)
             this.$store
                 .dispatch("checkEmail", {
                     newEmail: this.email
@@ -98,7 +98,7 @@ export default {
                             this.message = "Email Found"
                         }
                     }, err => {
-                        this.message = "failed: "
+                        this.message = "failed: " + err
                     }
                 )
         }

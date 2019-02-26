@@ -172,7 +172,7 @@ export default {
         })
     },
 
-    checkUsername({ newUsername }) {
+    checkUsername(vueArgs, { newUsername }) {
         const url = API_URL + "/check_username"
         return new Promise((resolve, reject) => {
             axios
@@ -194,7 +194,8 @@ export default {
         })
     },
 
-    checkEmail({ newEmail }) {
+    checkEmail(vueArgs, { newEmail }) {
+        console.log("actions.js: Email is " + newEmail)
         const url = API_URL + "/check_email"
         return new Promise((resolve, reject) => {
             axios
