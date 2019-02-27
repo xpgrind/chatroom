@@ -50,11 +50,7 @@ export default {
 
         username() {
             return this.$store.state.username
-        },
-
-        // picture() {
-        //     return this.$store.state.photo
-        // }
+        }
     },
 
     methods: {
