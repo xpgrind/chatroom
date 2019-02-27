@@ -57,14 +57,16 @@ export default {
             .post(url, { user_id: state.userID, token: state.token })
             .then(
                 (response) => { return response.data },
-                (error) => { console.log("Error!", error) }
             )
             .then(
                 json => {
                     console.log("Getting Info succeeded")
                     commit("setInfo", {username: json.username})
                 }
-            )
+            // eslint-disable-next-line
+            ).catch(error => {
+                logger.debug("loadUserInfo failed")
+            })
     },
 
     addFriend({ state, dispatch }, {newFriend}) {
@@ -92,7 +94,6 @@ export default {
     },
 
     clearLogin({ commit }) {
-        Vue.cookie.delete("token")
         commit("clearLogin")
     },
 

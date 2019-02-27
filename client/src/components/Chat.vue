@@ -17,7 +17,7 @@
             <button @click="clearFriend()">Delete Friend</button>
             <p :style="color2">{{ message2 }}</p>
             <div>
-            <button>Log Out</button>
+            <button @click="logout()">Log Out</button>
             </div>
         </div>
     </div>
@@ -101,9 +101,13 @@ export default {
         loadFriends() {
             console.log("Loading friends List ")
             this.see = true
-            this.$store
-                .dispatch("loadFriendList")
+            this.$store.dispatch("loadFriendList")
         },
+
+        logout() {
+            console.log("Logging out")
+            this.$store.dispatch("clearLogin")
+        }
     }
 }
 </script>

@@ -16,7 +16,8 @@ export default {
     },
 
     clearLogin(state) {
-        logger.debug("Clear Username")
+        logger.debug("Clearing login...")
+        // Vue.$cookie.delete("chatroom_token")
         state.email = null
         state.token = null
         state.friends = null
@@ -24,6 +25,7 @@ export default {
             window.localStorage.removeItem("chatroom_user_id")
             window.localStorage.removeItem("chatroom_token")
         }
+        logger.debug("Done clearing")
     },
 
     setFriendList(state, { friends }) {
