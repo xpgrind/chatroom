@@ -24,16 +24,15 @@ export default {
         Register,
     },
 
-    data () {
+    data() {
         return {
         }
     },
-    created:
-        function() {
-            console.log("Loading Perosnal Info ")
-            this.$store
-                .dispatch("loadUserInfo")
-        }
+
+    created() {
+        console.log("Loading Perosnal Info ")
+        this.$store.dispatch("loadUserInfo")
+    }
 }
 </script>
 

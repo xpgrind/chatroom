@@ -72,6 +72,8 @@ export default {
                 })
                 .then(
                     (response) => {
+                        console.log("Loading Perosnal Info ")
+                        this.$store.dispatch("loadUserInfo")
                         this.$router.push({ path: this.redirect })
                     }, error => {
                         this.c2 = "color: tomato"

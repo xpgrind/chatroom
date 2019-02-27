@@ -238,7 +238,7 @@ def sendMsg(db_session):
 def getInfo(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    user_id = json_data.get('user_id')
+    user_id = json_data['user_id']
     user_name = db_session.query(Account).filter_by(id=user_id).first().username
 
     return flask.jsonify({
