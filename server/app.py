@@ -256,7 +256,6 @@ def getInfo(db_session):
 #     prepared_statement = text('select account.id from account inner join profile_pic on profile_pic.user_id = account.id where account.id = :my_user_id;')
 #     friend_rows = db_session.execute(prepared_statement, {'my_user_id': user_id})
 
-
 @chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)
 def check_username(db_session):
     json_data = flask.request.json
