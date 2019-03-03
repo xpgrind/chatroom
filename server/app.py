@@ -73,6 +73,7 @@ def login(db_session):
             print("Login Succeeded")
             response = flask.jsonify({"success": True, "token": str_token, "user_id": user_id})
             response.set_cookie('chatroom_token', str_token, secure=secure_cookie, max_age=86400)
+            response.set_cookie('chatroom_user_id', str(user_id), secure=secure_cookie, max_age=86400)
             print("Set chatroom_token cookie")
             return response, 200
         else:
@@ -84,6 +85,7 @@ def login(db_session):
                 "message": "Login failed: " + ", ".join(error_messages)
             })
             response.set_cookie('chatroom_token', '', secure=secure_cookie, max_age=0)
+            response.set_cookie('chatroom_user_id', '', secure=secure_cookie, max_age=0)
             return response, 403
     else:
         error_messages.append("User Email Not Found")
@@ -93,6 +95,7 @@ def login(db_session):
             "message": "Login failed: " + ", ".join(error_messages)
         })
         response.set_cookie('chatroom_token', '', secure=secure_cookie, max_age=0)
+        response.set_cookie('chatroom_user_id', '', secure=secure_cookie, max_age=0)
         return response, 403
 
 
