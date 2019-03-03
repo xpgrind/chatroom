@@ -223,7 +223,7 @@ export default {
             axios
                 .post(url, { user_id: state.userID, token: state.token, path })
                 .then(
-                    (reponse) => { return response.data },
+                    (response) => { return response.data },
                 )
                 .then(json => {
                     if (!json) {

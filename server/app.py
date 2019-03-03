@@ -84,7 +84,7 @@ def login(db_session):
 
 
 @chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True)
-def addfriends(db_session):
+def add_friends(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
@@ -135,7 +135,7 @@ def addfriends(db_session):
         }), 400
 
 @chatroom.route('/friends/delete', methods=["OPTIONS", "POST"], db=True)
-def deletefriends(db_session):
+def delete_friends(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
@@ -184,7 +184,7 @@ def deletefriends(db_session):
         }), 400
 
 @chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True)
-def friendsList(db_session):
+def friends_list(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
@@ -206,7 +206,7 @@ def friendsList(db_session):
     }), 200
 
 @chatroom.route('/sendmsg', methods=["OPTIONS", "POST"], db=True)
-def sendMsg(db_session):
+def send_msg(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     sender_id = json_data.get('user_id')
@@ -235,7 +235,7 @@ def sendMsg(db_session):
 
 
 @chatroom.route('/userInfo', methods=["OPTIONS", "POST"], db=True)
-def getInfo(db_session):
+def get_info(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data['user_id']
@@ -292,7 +292,7 @@ def check_username(db_session):
 def check_email(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    new_email = json_data('newEmail')
+    new_email = json_data['newEmail']
     found_email = db_session.query(Account).filter_by(email=new_email).first()
 
     if found_email is None:

@@ -19,6 +19,9 @@
             <div>
             <button @click="logout()">Log Out</button>
             </div>
+            <router-link to="/profile">
+                Profile Page
+            </router-link>
         </div>
     </div>
 </template>
@@ -53,7 +56,7 @@ export default {
         },
 
         photo() {
-            return this.$store.state.photo
+            return '/' + this.$store.state.photo
         }
     },
 
