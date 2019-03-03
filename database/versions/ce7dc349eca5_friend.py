@@ -18,8 +18,8 @@ depends_on = None
 def upgrade():
     op.create_table(
         'friend',
-        sa.Column('user_id', sa.Integer, nullable=False),
-        sa.Column('friend_id', sa.Integer),
+        sa.Column('user_id', sa.Integer, sa.ForeignKey('account.id'), nullable=False),
+        sa.Column('friend_id', sa.Integer, sa.ForeignKey('account.id')),
         sa.PrimaryKeyConstraint('user_id', 'friend_id', name='mytable_pk')
     )
 
