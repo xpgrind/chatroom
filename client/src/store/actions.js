@@ -52,7 +52,7 @@ export default {
 
     loadUserInfo({ state, commit }) {
         logger.debug("Loading User Info")
-        const url = API_URL + "/userInfo"
+        const url = API_URL + "/get_info"
         axios
             .post(url, { user_id: state.userID, token: state.token })
             .then(
@@ -123,7 +123,7 @@ export default {
 
     sendMsg ({ state, commit, dispatch }, { newMsg, receiver, clientTime }) {
         logger.debug("send message ", state.userID)
-        const url = API_URL + "/sendmsg"
+        const url = API_URL + "/send_msg"
         axios
             .post(url, { user_id: state.userID, token: state.token, message: newMsg, receiver: receiver, client_time: clientTime })
             .then(
@@ -216,14 +216,13 @@ export default {
                 })
         })
     },
-
     uploadPhoto({ state, commit }, { path }) {
         const url = API_URL + "/upload_photo"
         return new Promise((resolve, reject) => {
             axios
                 .post(url, { user_id: state.userID, token: state.token, path })
                 .then(
-                    (reponse) => { return response.data },
+                    (response) => { return response.data },
                 )
                 .then(json => {
                     if (!json) {

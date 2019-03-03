@@ -82,9 +82,8 @@ def login(db_session):
             "message": "Login failed: " + ", ".join(error_messages)
         }), 403
 
-
 @chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True)
-def addfriends(db_session):
+def add_friends(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
@@ -135,7 +134,7 @@ def addfriends(db_session):
         }), 400
 
 @chatroom.route('/friends/delete', methods=["OPTIONS", "POST"], db=True)
-def deletefriends(db_session):
+def delete_friends(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
@@ -184,7 +183,7 @@ def deletefriends(db_session):
         }), 400
 
 @chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True)
-def friendsList(db_session):
+def friends_list(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
@@ -205,8 +204,8 @@ def friendsList(db_session):
         "friends": friends,
     }), 200
 
-@chatroom.route('/sendmsg', methods=["OPTIONS", "POST"], db=True)
-def sendMsg(db_session):
+@chatroom.route('/send_msg', methods=["OPTIONS", "POST"], db=True)
+def send_msg(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     sender_id = json_data.get('user_id')
@@ -233,9 +232,8 @@ def sendMsg(db_session):
         "message": "Sending messages succeeded",
     }), 200
 
-
-@chatroom.route('/userInfo', methods=["OPTIONS", "POST"], db=True)
-def getInfo(db_session):
+@chatroom.route('/get_info', methods=["OPTIONS", "POST"], db=True)
+def get_info(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data['user_id']
@@ -246,7 +244,6 @@ def getInfo(db_session):
         "username": user_name,
         "photo": photo
     }), 200
-
 
 @chatroom.route('/upload_photo', methods=["OPTIONS", "POST"], db=True)
 def upload_photo(db_session):
@@ -269,7 +266,7 @@ def upload_photo(db_session):
 def check_username(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    new_username = json_data.get['newUsername']
+    new_username = json_data.get('newUsername')
 
     found_user = db_session.query(Account).filter_by(username=new_username).first()
 
@@ -292,7 +289,7 @@ def check_username(db_session):
 def check_email(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    new_email = json_data('newEmail')
+    new_email = json_data['newEmail']
     found_email = db_session.query(Account).filter_by(email=new_email).first()
 
     if found_email is None:
