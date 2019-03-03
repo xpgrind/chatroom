@@ -11,7 +11,7 @@ client_address = "http://localhost:8080"
 
 
 def create_response(headers, data, status):
-    print("Creating response: {} {}\n".format(data, status))
+    print("Creating response: {} {}".format(data, status))
     response = flask.jsonify(data)
     h = response.headers
     for k, v in headers.items():
@@ -39,11 +39,12 @@ class ChatroomRouter:
             @wraps(f)
             def route_call(*fargs, **fkwargs):
                 method = flask.request.method
-                print("{} call on route: {}".format(method, f.__name__))
+                print("\n{} call on route: {}".format(method, f.__name__))
 
                 headers = {
                     'Access-Control-Allow-Origin': client_address,
                     'Access-Control-Allow-Methods': string_methods,
+                    'Access-Control-Max-Age': '21600',
                     'Access-Control-Allow-Headers': string_headers,
                     'Access-Control-Allow-Credentials': 'true',
                     'Content-type': "application/json",
@@ -138,6 +139,9 @@ class ChatroomRouter:
 
                 if db_session is not None:
                     db_session.close()
+
+                # print("Final Response Headers:")
+                # print(response.headers)
 
                 print("[{}] Done Call to function: {}".format(response.status_code, f.__name__))
                 return res

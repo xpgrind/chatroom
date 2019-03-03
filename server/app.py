@@ -4,6 +4,8 @@ import base64
 
 import flask
 from flask import Flask
+from flask_socketio import SocketIO
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import text
@@ -13,8 +15,9 @@ from chatroom.db.tables import Account, Token, Friend, ProfilePic, Message
 from chatroom_router import ChatroomRouter, client_address
 
 app = Flask(__name__)
-
 chatroom = ChatroomRouter(app)
+
+socketio = SocketIO(app)
 
 # @chatroom.route('/insecure', methods=["GET", "OPTIONS", "POST"], requires_login=False)
 # def insecure_route():
@@ -35,6 +38,9 @@ chatroom = ChatroomRouter(app)
 
 @chatroom.route('/login', methods=["OPTIONS", "POST"], db=True, requires_login=False)
 def login(db_session):
+    # Disabled during local testing while serving over HTTP
+    secure_cookie = False
+
     print("Login Attempt")
     json_data = flask.request.json
     print("Data: {}".format(json_data))
@@ -65,22 +71,30 @@ def login(db_session):
             db_session.commit()
 
             print("Login Succeeded")
-            return flask.jsonify({"success": True, "token": str_token, "user_id": user_id})
+            response = flask.jsonify({"success": True, "token": str_token, "user_id": user_id})
+            response.set_cookie('chatroom_token', str_token, secure=secure_cookie, max_age=86400)
+            print("Set chatroom_token cookie")
+            return response, 200
         else:
             db_session.rollback()
             token = ''
             error_messages.append("Password is Wrong")
-            return flask.jsonify({
+            response = flask.jsonify({
                 "success": False,
                 "message": "Login failed: " + ", ".join(error_messages)
-            }), 403
+            })
+            response.set_cookie('chatroom_token', '', secure=secure_cookie, max_age=0)
+            return response, 403
     else:
         error_messages.append("User Email Not Found")
         print("Email not Found")
-        return flask.jsonify({
+        response = flask.jsonify({
             "success": False,
             "message": "Login failed: " + ", ".join(error_messages)
-        }), 403
+        })
+        response.set_cookie('chatroom_token', '', secure=secure_cookie, max_age=0)
+        return response, 403
+
 
 @chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True)
 def add_friends(db_session):
@@ -434,4 +448,4 @@ def register_submit(db_session):
 
 if __name__ == '__main__':
     # app.run(debug=True)
-    app.run()
+    socketio.run(app)
