@@ -21,8 +21,7 @@ def upgrade():
         'profile_pic',
         sa.Column('id', sa.Integer, primary_key=True, nullable=False),
         sa.Column('user', sa.Integer, sa.ForeignKey('account.id'), nullable=False),
-        sa.Column('path', sa.Text, nullable=False),
-        sa.Column('name', sa.String(30)),
+        sa.Column('path', sa.Text, nullable=False)
     )
 
 def downgrade():

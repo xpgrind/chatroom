@@ -1,7 +1,7 @@
 """create account table
 
 Revision ID: eeabcbb77454
-Revises: 3f1b1367e94d
+Revises: None
 Create Date: 2019-01-17 20:57:42.955640
 
 """

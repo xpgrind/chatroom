@@ -33,10 +33,8 @@ class Friend(Base):
 class Profile_Pic(Base):
     __tablename__ = 'profile_pic'
     id = Column(Integer, primary_key=True)
-    account = relationship("Account", backref="user_of_account")
-    user = Column(Integer, ForeignKey("account.id"), nullable=False)
+    user = Column(Integer, nullable=False)
     path = Column(TEXT, nullable=False)
-    name = Column(String(30))
 
 class Message(Base):
     __tablename__ = 'message'

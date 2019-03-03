@@ -61,7 +61,7 @@ export default {
             .then(
                 json => {
                     console.log("Getting Info succeeded")
-                    commit("setInfo", {username: json.username})
+                    commit("setInfo", {username: json.username, photo: json.photo})
                 }
             // eslint-disable-next-line
             ).catch(error => {
@@ -216,24 +216,24 @@ export default {
                 })
         })
     },
-    // uploadFile({ state, commit }, { path }) {
-    //     const url = API_URL + "/check_path"
-    //     return new Promise((resolve, reject) => {
-    //         axios
-    //             .post(url, { path })
-    //             .then(
-    //                 (reponse) => { return response.data },
-    //             )
-    //             .then(json => {
-    //                 if (!json) {
-    //                     reject(new Error("No reply from server"))
-    //                 }
-    //                 resolve(json)
-    //             })
-    //             .catch(error => {
-    //                 logger.warn("Picture Path failed", error)
-    //                 reject(error)
-    //             })
-    //     })
-    // }
+    uploadPic({ state, commit }, { path }) {
+        const url = API_URL + "/upload_photo"
+        return new Promise((resolve, reject) => {
+            axios
+                .post(url, { user_id: state.userID, token: state.token, path })
+                .then(
+                    (reponse) => { return response.data },
+                )
+                .then(json => {
+                    if (!json) {
+                        reject(new Error("No reply from server"))
+                    }
+                    resolve(json)
+                })
+                .catch(error => {
+                    logger.warn("Picture Path failed", error)
+                    reject(error)
+                })
+        })
+    }
 }

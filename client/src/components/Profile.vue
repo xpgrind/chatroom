@@ -13,7 +13,7 @@
             Age:<br>
             <input type="number" name="age" value="20" v-model="age">
             <br><br>Constallation:
-            <br><input list="constellations" name="constellation" v-model="constellation">
+            <!-- <br><input list="constellations" name="constellation" v-model="constellation">
             <datalist id="constellations">
                 <option value="Auqarius"></option>
                 <option value="Sagittarius"></option>
@@ -27,7 +27,7 @@
                 <option value="Virgo"></option>
                 <option value="Scorpio"></option>
                 <option value="Capricorn"></option>
-            </datalist>
+            </datalist> -->
             <br><br>Birthday:
             <br><input type="date" name="birth" value="" v-model="birth">
             <br><br>Location:
@@ -71,19 +71,20 @@ export default {
     computed: {
     },
     methods: {
-        uploadFile () {
+        uploadPhoto () {
+            let dataURl = ''
             const file = document.getElementById('pop_file')
             const fileObj = file.files[0]
             const windowURL = window.URL || window.webkitURL
             const img = document.getElementById('preview')
             if (file && fileObj) {
-                const dataURl = windowURL.createObjectURL(fileObj)
+                dataURl = windowURL.createObjectURL(fileObj)
                 img.setAttribute('src', dataURl)
                 console.log("upload profile pic" + dataURl)
             }
             this.$store
                 .dispatch("uploadPic", {
-                    // path: dataURl
+                    path: dataURl
                 })
                 .then(
                     (json) => {

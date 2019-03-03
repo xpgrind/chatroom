@@ -247,14 +247,13 @@ def getInfo(db_session):
     }), 200
 
 
-# @chatroom.route('/upload_profile', methods=["OPTIONS", "POST"], db=True)
-# def upload_profile(db_session):
-#     json_data = flask.request.json
-#     print("Data: {}".format(json_data))
-#     user_id = json_data.get('user_id')
-#     pic_path = db_session.query(Profile_Pic).get(username)
-#     prepared_statement = text('select account.id from account inner join profile_pic on profile_pic.user_id = account.id where account.id = :my_user_id;')
-#     friend_rows = db_session.execute(prepared_statement, {'my_user_id': user_id})
+@chatroom.route('/upload_photo', methods=["OPTIONS", "POST"], db=True)
+def upload_photo(db_session):
+    json_data = flask.request.json
+    print("Data: {}".format(json_data))
+    user_id = json_data.get('user_id')
+    photo_path = db_session.query(Profile_Pic).filter_by(username=new_username).first()
+
 
 @chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)
 def check_username(db_session):
