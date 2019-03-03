@@ -3,10 +3,9 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import VueCookie from 'vue-cookie'
 import store from "./store/index"
+import VueCookie from 'vue-cookie'
 
-// Tell Vue to use the plugin
 Vue.use(VueCookie)
 
 Vue.config.productionTip = false

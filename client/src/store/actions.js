@@ -35,19 +35,14 @@ export default {
     loadFriendList({ state, commit }) {
         logger.debug("Loading friend list")
         const url = API_URL + "/friends/list"
-        return new Promise((resolve, reject) => {
-            axios
-                .post(url, { user_id: state.userID, token: state.token })
-                .then(
-                    (response) => { return response.data },
-                    (error) => { console.log("Error!", error) }
-                )
-                .then(
-                    json => {
-                        console.log("Loading friend succeeded")
-                        commit("setFriendList", {friends: json.friends})
-                        resolve(json)
-                    })
+
+        socket.emit("/friends/list", {}, (response) => {
+            logger.debug("loadFriendList response", response)
+            if (response.success) {
+                commit("setFriendList", {friends: response.friends})
+            } else {
+                logger.error("Cannot load friends list!")
+            }
         })
     },
 

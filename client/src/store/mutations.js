@@ -1,6 +1,7 @@
 import Vue from "vue"
 import { Logger } from "@/common"
 import { stat } from "fs"
+import VueCookie from 'vue-cookie'
 
 const logger = Logger.get("mutations.js")
 
@@ -16,8 +17,10 @@ export default {
     },
 
     clearLogin(state) {
+        const date = new Date()
         logger.debug("Clearing login...")
-        // Vue.$cookie.delete("chatroom_token")
+        VueCookie.delete("chatroom_token")
+        VueCookie.delete("chatroom_user_id")
         state.userID = null
         state.token = null
         if (window.localStorage) {

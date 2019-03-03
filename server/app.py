@@ -37,6 +37,7 @@ socketio = flask_socketio.SocketIO(app)
 #     response = flask.jsonify({"success": True})
 #     return response
 
+
 @chatroom.route('/login', methods=["OPTIONS", "POST"], db=True, requires_login=False)
 def login(db_session):
     # Disabled during local testing while serving over HTTP
@@ -100,6 +101,19 @@ def login(db_session):
         return response, 403
 
 
+clients = {}
+user_sids = {}
+
+class ConnectedClient:
+    def __init__(self, sid):
+        self.sid = sid
+        self.connected = True
+
+    # Emits data to a socket's unique room
+    def emit(self, event, data):
+        flask_socketio.emit(event, data, room=self.sid)
+
+
 @socketio.on('connect')
 def handler__connect():
     print('connect: enter')
@@ -115,9 +129,18 @@ def handler__connect():
     else:
         validation = {"success": False, "reason": "token or user_id missing"}
 
+    user_id = int(user_id)
+
     print("Connect login response: {}".format(validation))
 
     if validation.get('success'):
+        assert sid is not None
+
+        if user_id in user_sids:
+            user_sids[user_id].add(sid)
+        else:
+            user_sids[user_id] = {sid}
+        clients[sid] = ConnectedClient(sid)
         # Flask session can be used for storing information iirc?
         flask.session['chatroom_token'] = token
         flask.session['chatroom_user_id'] = user_id
@@ -137,9 +160,57 @@ def handler__disconnect():
 
     chatroom_token = flask.session.get('chatroom_token')
     chatroom_user_id = flask.session.get('chatroom_user_id')
+    if chatroom_user_id is not None:
+        user_id = int(chatroom_user_id)
+        if user_id in user_sids:
+            try:
+                user_sids[user_id].remove(sid)
+            except KeyError:
+                # Sid already removed
+                pass
+
     print("Disconnect user_id {} token {}".format(chatroom_user_id, chatroom_token))
     # TODO: Expire the token for this user
     print('disconnect: done')
+
+
+@socketio.on('/friends/list')
+def friends_list(args):
+    db_session = get_session()
+    chatroom_user_id = flask.session.get('chatroom_user_id')
+
+    print("Friends list, arguments: {}, user id: {}".format(args, chatroom_user_id))
+
+    friends = []
+
+    prepared_statement = text('select account.username from friend inner join account on friend.friend_id = account.id where friend.user_id = :my_user_id;')
+    friend_rows = db_session.execute(prepared_statement, {'my_user_id': chatroom_user_id})
+
+    for row in friend_rows:
+        username = row[0]
+        friends.append(username)
+
+    target_sids = user_sids[chatroom_user_id]
+    for target_sid in target_sids:
+        clients[target_sid].emit('message/new', {
+            "success": True,
+            "message": "This is an example of how you can emit a message to any user",
+        })
+
+    return {
+        "success": True,
+        "friends": friends,
+    }
+
+# @chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True)
+# def friends_list(db_session):
+#     json_data = flask.request.json
+#     print("Data: {}".format(json_data))
+#     user_id = json_data.get('user_id')
+#     friends = db_session.query(Friend).filter_by(user_id=user_id).all()
+#     # friend_ids = [x.friend_id for x in friends]
+
+
 
 
 @chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True)
@@ -242,27 +313,6 @@ def delete_friends(db_session):
             "message": "Friend Not Found",
         }), 400
 
-@chatroom.route('/friends/list', methods=["OPTIONS", "POST"], db=True)
-def friends_list(db_session):
-    json_data = flask.request.json
-    print("Data: {}".format(json_data))
-    user_id = json_data.get('user_id')
-    friends = db_session.query(Friend).filter_by(user_id=user_id).all()
-    # friend_ids = [x.friend_id for x in friends]
-
-    friends = []
-
-    prepared_statement = text('select account.username from friend inner join account on friend.friend_id = account.id where friend.user_id = :my_user_id;')
-    friend_rows = db_session.execute(prepared_statement, {'my_user_id': user_id})
-
-    for row in friend_rows:
-        username = row[0]
-        friends.append(username)
-
-    return flask.jsonify({
-        "success": True,
-        "friends": friends,
-    }), 200
 
 @chatroom.route('/send_msg', methods=["OPTIONS", "POST"], db=True)
 def send_msg(db_session):
@@ -273,7 +323,6 @@ def send_msg(db_session):
     receiver = json_data.get('receiver')
     client_time = json_data.get('client_time')
     server_time = datetime
-    import pdb; from pprint import pprint; pdb.set_trace()
 
     receiver_id = db_session.query(Account).filter_by(username=receiver).first().id
 
