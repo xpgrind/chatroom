@@ -190,12 +190,12 @@ def friends_list(args):
         username = row[0]
         friends.append(username)
 
-    target_sids = user_sids[chatroom_user_id]
-    for target_sid in target_sids:
-        clients[target_sid].emit('message/new', {
-            "success": True,
-            "message": "This is an example of how you can emit a message to any user",
-        })
+    # When sending a message to a user, you can send to ANY user as long as you know their user id
+    # target_sids = user_sids[chatroom_user_id]
+    # for target_sid in target_sids:
+    #     clients[target_sid].emit('message/new', {
+    #         "message": "This is an example of how you can emit a message to any user",
+    #     })
 
     return {
         "success": True,
