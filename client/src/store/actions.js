@@ -61,7 +61,7 @@ export default {
             .then(
                 json => {
                     console.log("Getting Info succeeded")
-                    commit("setInfo", {username: json.username, photo: json.photo})
+                    commit("setInfo", {username: json.username}) //, photo: json.photo})
                 }
             // eslint-disable-next-line
             ).catch(error => {

@@ -238,11 +238,11 @@ def get_info(db_session):
     print("Data: {}".format(json_data))
     user_id = json_data['user_id']
     user_name = db_session.query(Account).filter_by(id=user_id).first().username
-    photo = db_session.query(ProfilePic).filter_by(user=user_id).first().path
+    # photo = db_session.query(ProfilePic).filter_by(user=user_id).first().path
     return flask.jsonify({
         "success": True,
         "username": user_name,
-        "photo": photo
+        # "photo": photo
     }), 200
 
 @chatroom.route('/upload_photo', methods=["OPTIONS", "POST"], db=True)
