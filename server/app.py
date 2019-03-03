@@ -323,7 +323,6 @@ def send_msg(db_session):
     receiver = json_data.get('receiver')
     client_time = json_data.get('client_time')
     server_time = datetime
-
     receiver_id = db_session.query(Account).filter_by(username=receiver).first().id
 
     new_message = Message(
