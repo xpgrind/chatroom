@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import text
 from zxcvbn import zxcvbn
 
-from chatroom.db.tables import Account, Token, Friend, Profile_Pic, Message
+from chatroom.db.tables import Account, Token, Friend, ProfilePic, Message
 from chatroom_router import ChatroomRouter, client_address
 
 app = Flask(__name__)
@@ -240,10 +240,11 @@ def getInfo(db_session):
     print("Data: {}".format(json_data))
     user_id = json_data['user_id']
     user_name = db_session.query(Account).filter_by(id=user_id).first().username
-
+    photo = db_session.query(ProfilePic).filter_by(user=user_id).first().path
     return flask.jsonify({
         "success": True,
-        "username": user_name
+        "username": user_name,
+        "photo": photo
     }), 200
 
 
@@ -253,7 +254,7 @@ def upload_photo(db_session):
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
     photo_path = json_data.get('path')
-    photo = Profile_Pic(
+    photo = ProfilePic(
         user=user_id,
         path=photo_path
     )
@@ -261,15 +262,14 @@ def upload_photo(db_session):
     db_session.commit()
     print('upload phot succeeds ! ')
     return flask.jsonify({
-        "success": True,
-        "available": True
+        "success": True
     }), 200
 
 @chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)
 def check_username(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    new_username = json_data.get('newUsername')
+    new_username = json_data.get['newUsername']
 
     found_user = db_session.query(Account).filter_by(username=new_username).first()
 
@@ -292,7 +292,7 @@ def check_username(db_session):
 def check_email(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
-    new_email = json_data['newEmail']
+    new_email = json_data('newEmail')
     found_email = db_session.query(Account).filter_by(email=new_email).first()
 
     if found_email is None:

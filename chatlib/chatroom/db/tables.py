@@ -30,7 +30,7 @@ class Friend(Base):
     friend_id = Column(Integer,nullable=False)
     user_id = Column(Integer, primary_key=True, nullable=False)
 
-class Profile_Pic(Base):
+class ProfilePic(Base):
     __tablename__ = 'profile_pic'
     id = Column(Integer, primary_key=True)
     user = Column(Integer, nullable=False)
