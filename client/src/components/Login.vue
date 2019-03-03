@@ -98,9 +98,11 @@ export default {
                             this.c1 = "color: tomato"
                             this.message = "Email Not Found"
                         } else {
+                            this.c1 = "color: green"
                             this.message = "Email Found"
                         }
                     }, err => {
+                        this.c1 = "color: tomato"
                         this.message = "failed: " + err
                     }
                 )

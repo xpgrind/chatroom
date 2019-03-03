@@ -6,10 +6,10 @@
             <button @click="loadFriends()">Load Friendslist</button>
             <p>Friends: </p>
             <span v-show="see" v-for="friend in friendList" :key="friend">
-               <router-link to="/room">
-                    <a>{{ friend }} </a>
-                </router-link>
             </span>
+            <router-link to="/room">
+                <p>Room</p>
+            </router-link>
             <h5>Input his/her username: <input type="text" v-model="friend1"></h5>
             <button @click="addFriend()" >Add Friend</button>
             <p :style="color1">{{ message1 }}</p>
