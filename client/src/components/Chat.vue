@@ -2,7 +2,7 @@
     <div id="chat">
         <h2>Welcome,   {{ username }}   !</h2>
             <div class="container">
-            <!-- <img class="a" :src="picture" width="100px" height="100px"> -->
+            <img class="a" :src="photo" width="100px" height="100px">
             <button @click="loadFriends()">Load Friendslist</button>
             <p>Friends: </p>
             <span v-show="see" v-for="friend in friendList" :key="friend">
@@ -50,6 +50,10 @@ export default {
 
         username() {
             return this.$store.state.username
+        },
+
+        photo() {
+            return this.$store.state.photo
         }
     },
 

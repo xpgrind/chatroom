@@ -216,6 +216,7 @@ export default {
                 })
         })
     },
+
     uploadPhoto({ state, commit }, { path }) {
         const url = API_URL + "/upload_photo"
         return new Promise((resolve, reject) => {

@@ -4,7 +4,7 @@
             <img id="preview" src="/static/profile.png" width="120px" height="120px"/>
             <br>
             <h6>Upload Your profile pic:</h6>
-            <input id="pop_file" type="file" accept=".jpg,.jpeg,.png" v-on:change="uploadFile($event)" name="fileTrans" ref="file" value=""/>
+            <input id="pop_file" type="file" accept=".jpg,.jpeg,.png" v-on:change="uploadPhoto($event)" name="fileTrans" ref="file" value=""/>
             <br><br> Gender: <br>
             <input type="radio" name="gender" value="male" v-model="gender"> Male
             <span id="c"><input type="radio" name="gender" value="female">Female</span>
