@@ -6,6 +6,7 @@
             <button @click="loadFriends()">Load Friendslist</button>
             <p>Friends: </p>
             <span v-show="see" v-for="friend in friendList" :key="friend">
+                {{ friend }}
             </span>
             <router-link to="/room">
                 <p>Room</p>
@@ -35,6 +36,7 @@ export default {
     name: 'Chat',
 
     data () {
+        const prevQuery = this.$route.query
         return {
             title: 'Chat',
             friend1: '',
@@ -44,6 +46,7 @@ export default {
             color1: '',
             color2: '',
             see: false,
+            redirect: prevQuery.redirect ? prevQuery.redirect : "/",
         }
     },
     computed: {
@@ -110,6 +113,7 @@ export default {
         logout() {
             console.log("Logging out")
             this.$store.dispatch("clearLogin")
+            this.$router.push({ path: this.redirect })
         }
     }
 }
