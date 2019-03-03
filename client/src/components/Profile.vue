@@ -83,7 +83,7 @@ export default {
                 console.log("upload profile pic" + dataURl)
             }
             this.$store
-                .dispatch("uploadPic", {
+                .dispatch("uploadPhoto", {
                     path: dataURl
                 })
                 .then(

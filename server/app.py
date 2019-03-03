@@ -252,7 +252,16 @@ def upload_photo(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     user_id = json_data.get('user_id')
-    photo_path = db_session.query(Profile_Pic).filter_by(username=new_username).first()
+    photo_path = json_data.get('path')
+
+    photo=Profile_Pic(
+        user = user_id
+        path = photo_path
+    )
+    db_session.add(photo)
+    db_session.commit()
+
+
 
 
 @chatroom.route('/check_username', methods=["OPTIONS", "POST"], db=True, requires_login=False)
