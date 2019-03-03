@@ -56,7 +56,7 @@ export default {
         },
 
         photo() {
-            return this.$store.state.photo
+            return '/' + this.$store.state.photo
         }
     },
 
