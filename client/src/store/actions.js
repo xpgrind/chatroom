@@ -2,6 +2,7 @@ import Vue from "vue"
 import axios from "axios"
 import { API_URL } from "@/api/server"
 import { Logger } from "@/common"
+import socket from "@/socket.js"
 
 const logger = Logger.get("actions.js")
 
@@ -94,7 +95,9 @@ export default {
     },
 
     clearLogin({ commit }) {
+        logger.debug("Logging out...")
         commit("clearLogin")
+        socket.disconnect()
     },
 
     deleteFriend({ state, commit, dispatch }, {friend}) {

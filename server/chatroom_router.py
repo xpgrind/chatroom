@@ -20,6 +20,22 @@ def create_response(headers, data, status):
     return response
 
 
+def validate_credentials(db_session, user_id, user_token):
+    if not isinstance(user_token, str):
+        return {"success": False, "reason": "user_token should be a str"}
+
+    if not isinstance(user_id, int):
+        return {"success": False, "reason": "user_id should be an int"}
+
+    prepared_statement = text('select token_string from token where user_id = :user_id and token_string = :user_token and expire_time > current_timestamp order by expire_time desc limit 1')
+    token_rows = db_session.execute(prepared_statement, {'user_id': user_id, 'user_token': user_token})
+    token_row = token_rows.first()
+    if not token_row:
+        return {"success": False, "reason": "Invalid user_id or token"}
+
+    return {"success": True}
+
+
 class ChatroomRouter:
     def __init__(self, app):
         self.app = app

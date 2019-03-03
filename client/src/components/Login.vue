@@ -42,6 +42,7 @@
 
 <script>
 import { Logger } from "@/common"
+import socket from "@/socket.js"
 
 const logger = Logger.get("Login")
 
@@ -72,7 +73,9 @@ export default {
                 })
                 .then(
                     (response) => {
-                        console.log("Loading Perosnal Info ")
+                        logger.debug("Connecting to socketIO")
+                        socket.connect()
+                        console.log("Loading Personal Info ")
                         this.$store.dispatch("loadUserInfo")
                         this.$router.push({ path: this.redirect })
                     }, error => {

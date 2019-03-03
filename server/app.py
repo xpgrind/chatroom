@@ -4,7 +4,7 @@ import base64
 
 import flask
 from flask import Flask
-from flask_socketio import SocketIO
+import flask_socketio
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
@@ -12,12 +12,13 @@ from sqlalchemy.sql import text
 from zxcvbn import zxcvbn
 
 from chatroom.db.tables import Account, Token, Friend, ProfilePic, Message
-from chatroom_router import ChatroomRouter, client_address
+from chatroom_router import ChatroomRouter, client_address, validate_credentials
+from chatroom.db.session import get_session
 
 app = Flask(__name__)
 chatroom = ChatroomRouter(app)
 
-socketio = SocketIO(app)
+socketio = flask_socketio.SocketIO(app)
 
 # @chatroom.route('/insecure', methods=["GET", "OPTIONS", "POST"], requires_login=False)
 # def insecure_route():
@@ -97,6 +98,48 @@ def login(db_session):
         response.set_cookie('chatroom_token', '', secure=secure_cookie, max_age=0)
         response.set_cookie('chatroom_user_id', '', secure=secure_cookie, max_age=0)
         return response, 403
+
+
+@socketio.on('connect')
+def handler__connect():
+    print('connect: enter')
+    sid = getattr(flask.request, 'sid', None)
+    print('cookies:', flask.request.cookies)
+    cookies = {k.strip('; '): v for k, v in (flask.request.cookies or {}).items()}
+    token = cookies.get('chatroom_token')
+    user_id = cookies.get('chatroom_user_id')
+    db_session = get_session()
+    # Verify token and user name:
+    if token is not None and user_id is not None:
+        validation = validate_credentials(db_session, int(user_id), token)
+    else:
+        validation = {"success": False, "reason": "token or user_id missing"}
+
+    print("Connect login response: {}".format(validation))
+
+    if validation.get('success'):
+        # Flask session can be used for storing information iirc?
+        flask.session['chatroom_token'] = token
+        flask.session['chatroom_user_id'] = user_id
+        flask_socketio.emit('connect_info', {
+            'sid': sid,
+        })
+        return True
+    else:
+        print('connect: REJECT <no token>')
+        return False
+
+
+@socketio.on('disconnect')
+def handler__disconnect():
+    print('disconnect: enter')
+    sid = getattr(flask.request, 'sid', None)
+
+    chatroom_token = flask.session.get('chatroom_token')
+    chatroom_user_id = flask.session.get('chatroom_user_id')
+    print("Disconnect user_id {} token {}".format(chatroom_user_id, chatroom_token))
+    # TODO: Expire the token for this user
+    print('disconnect: done')
 
 
 @chatroom.route('/friends/add', methods=["OPTIONS", "POST"], db=True)
