@@ -50,8 +50,6 @@ class ChatroomRouter:
         string_headers = ', '.join(x.upper() for x in allowed_headers)
 
         def function_wrapper(f):
-            print("Inside Wrapper" + f.__name__)
-
             @wraps(f)
             def route_call(*fargs, **fkwargs):
                 method = flask.request.method

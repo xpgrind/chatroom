@@ -29,13 +29,8 @@ export default {
     methods: {
         send() {
             console.log("Sending a message " + this.message)
-            let date = new Date()
             this.$store
-                .dispatch("sendMsg", {
-                    newMsg: this.message,
-                    receiver: this.friend,
-                    clientTime: date.getTime()
-                })
+                .dispatch("sendMsg", {newMsg: this.message, receiver: this.friend})
                 .then(
                     (json) => {
                         logger.debug("success, got json:", json)

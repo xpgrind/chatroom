@@ -34,8 +34,8 @@
       <br>
       <button type="submit" value="Submit">Register</button>
       <span>
-      <router-link style="text-align:center" to="/">
-        <a>Home Page</a>
+      <router-link style="text-align:center" to="/login">
+        <a>Log In</a>
       </router-link>
       </span>
     </form>
@@ -117,7 +117,7 @@ export default {
                 .then(
                     () => {
                         this.c2 = "color:white"
-                        this.registerStatus = "Register Succeeded !"
+                        this.registerStatus = "Register Succeeded, Go to Log in !"
                     },
                     err => {
                         console.log("Error is", err)

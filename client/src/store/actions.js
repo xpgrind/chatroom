@@ -34,8 +34,6 @@ export default {
 
     loadFriendList({ state, commit }) {
         logger.debug("Loading friend list")
-        const url = API_URL + "/friends/list"
-
         socket.emit("/friends/list", {}, (response) => {
             logger.debug("loadFriendList response", response)
             if (response.success) {
@@ -119,23 +117,18 @@ export default {
         })
     },
 
-    sendMsg ({ state, commit, dispatch }, { newMsg, receiver, clientTime }) {
+    sendMsg({ state, commit, dispatch }, { newMsg, receiver }) {
+        const clientTime = new Date().getTime() / 1000
+        logger.debug("sendMsg clientTime", clientTime, "type is", typeof clientTime)
         logger.debug("send message ", state.userID)
-        const url = API_URL + "/send_msg"
-        axios
-            .post(url, { user_id: state.userID, token: state.token, message: newMsg, receiver: receiver, client_time: clientTime })
-            .then(
-                (response) => { return response.data },
-                (error) => {
-                    console.log("Error!", error.response)
-                    logger.debug("Sending Message returning error:", error, "reponse is", error.response)
-                }
-            )
-            .then(
-                json => {
-                    logger.debug("sending message returning success:, json is", json)
-                }
-            )
+        socket.emit("message/send", {newMsg, receiver, clientTime}, (response) => {
+            logger.debug("sendMsg response", response)
+            if (response.success) {
+                logger.debug("Successfully sent message")
+            } else {
+                logger.error("Cannot send messages!")
+            }
+        })
     },
 
     registerUser(vueParams, { newEmail, newUsername, newPassword }) {

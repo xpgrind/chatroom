@@ -140,11 +140,11 @@ def handler__connect():
             user_sids[user_id].add(sid)
         else:
             user_sids[user_id] = {sid}
-        clients[sid] = ConnectedClient(sid)
-        # Flask session can be used for storing information iirc?
-        flask.session['chatroom_token'] = token
-        flask.session['chatroom_user_id'] = user_id
-        flask_socketio.emit('connect_info', {
+            clients[sid] = ConnectedClient(sid)
+            # Flask session can be used for storing information iirc?
+            flask.session['chatroom_token'] = token
+            flask.session['chatroom_user_id'] = user_id
+            flask_socketio.emit('connect_info', {
             'sid': sid,
         })
         return True
@@ -171,7 +171,34 @@ def handler__disconnect():
 
     print("Disconnect user_id {} token {}".format(chatroom_user_id, chatroom_token))
     # TODO: Expire the token for this user
+    # flask.session.pop('chatroom_token')
     print('disconnect: done')
+
+
+@socketio.on('message/send')
+def send_message(args):
+    print("Start send_message")
+    db_session = get_session()
+    user_id = flask.session.get('chatroom_user_id')
+    message = args['newMsg']
+    friend_name = args['receiver'],
+    client_time = args['clientTime']
+    friend_user_id = db_session.query(Account).filter_by(username=friend_name).first().id
+
+    new_message = Message(
+        receiver_id=friend_user_id,
+        sender_id=user_id,
+        message=message,
+        client_time=datetime.fromtimestamp(client_time),
+        server_time=datetime.now(),
+    )
+    db_session.add(new_message)
+    db_session.commit()
+
+    print("Done send_message")
+    return {
+        "success": True,
+    }
 
 
 @socketio.on('/friends/list')
@@ -314,15 +341,15 @@ def delete_friends(db_session):
         }), 400
 
 
-@chatroom.route('/send_msg', methods=["OPTIONS", "POST"], db=True)
-def send_msg(db_session):
+@chatroom.route('/send_msg_old', methods=["OPTIONS", "POST"], db=True)
+def old_send_msg(db_session):
     json_data = flask.request.json
     print("Data: {}".format(json_data))
     sender_id = json_data.get('user_id')
     message = json_data.get('message')
     receiver = json_data.get('receiver')
     client_time = json_data.get('client_time')
-    server_time = datetime
+    server_time = datetime.now()
     receiver_id = db_session.query(Account).filter_by(username=receiver).first().id
 
     new_message = Message(
