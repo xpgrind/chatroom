@@ -1,16 +1,13 @@
 <template>
     <div id="chat">
         <h2>Welcome,   {{ username }}   !</h2>
-            <div class="container">
-            <img class="a" :src="photo" width="100px" height="100px">
+        <!-- <div class="box"></div> -->
             <button @click="loadFriends()">Load Friendslist</button>
-            <p>Friends: </p>
-            <span v-show="see" v-for="friend in friendList" :key="friend">
+            <p>Friends:
+            <span v-for="friend in friendList" :key="friend">
                 {{ friend }}
             </span>
-            <router-link to="/room">
-                <p>Room</p>
-            </router-link>
+            </p>
             <h5>Input his/her username: <input type="text" v-model="friend1"></h5>
             <button @click="addFriend()" >Add Friend</button>
             <p :style="color1">{{ message1 }}</p>
@@ -18,13 +15,24 @@
             <button @click="clearFriend()">Delete Friend</button>
             <p :style="color2">{{ message2 }}</p>
             <div>
+             <input v-model="message">
+            To:
+            <input v-model="friend3">
+            </div>
+            <button @click="send()">Send</button>
+            <div>
+            <button @click="get()">Get</button>
+
+            <span v-for="msg in message3" :key="msg">
+                {{ msg }}
+            </span>
+
             <button @click="logout()">Log Out</button>
             </div>
             <router-link to="/profile">
                 Profile Page
             </router-link>
         </div>
-    </div>
 </template>
 
 <script>
@@ -41,6 +49,8 @@ export default {
             title: 'Chat',
             friend1: '',
             friend2: '',
+            friend3: '',
+            message: '',
             message1: '',
             message2: '',
             color1: '',
@@ -58,12 +68,35 @@ export default {
             return this.$store.state.username
         },
 
-        photo() {
-            return '/' + this.$store.state.photo
-        }
+        message3() {
+            return this.$store.state.messages
+        },
+
+        // photo() {
+        //     return '/' + this.$store.state.photo
+        // }
     },
 
     methods: {
+        send() {
+            console.log("Sending a message " + this.message)
+            this.$store
+                .dispatch("sendMsg", {newMsg: this.message, receiver: this.friend3})
+                .then(
+                    (json) => {
+                        logger.debug("success, got json:", json)
+                    },
+                    (error) => {
+                        logger.warn("Failed", error, "response", error.response)
+                    }
+                )
+        },
+
+        get() {
+            console.log("Getting Messages ")
+            this.$store.dispatch("loadMsg")
+        },
+
         clearFriend() {
             console.log("Adding a friend " + this.friend2)
             this.$store
@@ -154,8 +187,46 @@ div{
     margin-top: 15px;
 }
 
-.container{
-    width: 600px;
-    height: 300px;
+.box{
+    height: 100px;
+    width: 100px;
+    right: 130px;
+    position: absolute;
+}
+
+.box::after{
+    border-radius: 10px;
+    background: url("../../static/en.png");
+    animation: rotate .5s linear infinite;
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80px;
+    height: 80px;
+}
+
+@keyframes shadow {
+    0%, 100% {transform: scaleX(1);}
+    50% {transform: scaleX(1.2);}
+}
+
+@keyframes rotate {
+    0% {
+    transform: translateY(0) ;
+  }
+    25% {
+        transform: translateY(10px);
+    }
+    50% {
+        transform: translateY(20px) scale(1.1, 0.9);
+
+    }
+    75% {
+        ransform: translateY(10px) ;
+    }
+    100% {
+        transform: translateY(0) ;
+    }
 }
 </style>

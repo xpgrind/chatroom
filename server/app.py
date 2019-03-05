@@ -181,7 +181,7 @@ def send_message(args):
     db_session = get_session()
     user_id = flask.session.get('chatroom_user_id')
     message = args['newMsg']
-    friend_name = args['receiver'],
+    friend_name = args['receiver']
     client_time = args['clientTime']
     friend_user_id = db_session.query(Account).filter_by(username=friend_name).first().id
 
@@ -200,6 +200,20 @@ def send_message(args):
         "success": True,
     }
 
+@socketio.on("message/get")
+def get_message():
+    print("Start get_message")
+    db_session = get_session()
+    user_id = flask.session.get('chatroom_user_id')
+    records = db_session.query(Message).filter_by(receiver_id=user_id).all()
+    msg = []
+    for i in records:
+        msg.append(i.message)
+    print("Done get_message")
+    return {
+        "success": True,
+        'messages': msg
+    }
 
 @socketio.on('/friends/list')
 def friends_list(args):
@@ -216,13 +230,6 @@ def friends_list(args):
     for row in friend_rows:
         username = row[0]
         friends.append(username)
-
-    # When sending a message to a user, you can send to ANY user as long as you know their user id
-    # target_sids = user_sids[chatroom_user_id]
-    # for target_sid in target_sids:
-    #     clients[target_sid].emit('message/new', {
-    #         "message": "This is an example of how you can emit a message to any user",
-    #     })
 
     return {
         "success": True,
@@ -255,6 +262,7 @@ def add_friends(db_session):
         }), 400
 
     found_user = db_session.query(Account).filter_by(username=friend_name).first()
+
     if found_user:
         friend_id = found_user.id
         if user_id == friend_id:

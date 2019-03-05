@@ -63,6 +63,19 @@ export default {
             })
     },
 
+    loadMsg({ state, commit }) {
+        logger.debug("Loading Messages")
+        socket.emit("/message/get", {}, (response) => {
+            logger.debug("loadMessage response", response)
+            if (response.success) {
+                debugger
+                commit("setMsg", {messages: response.messages})
+            } else {
+                logger.error("Cannot load messages!")
+            }
+        })
+    },
+
     addFriend({ state, dispatch }, {newFriend}) {
         logger.debug("addFriend, state.user_id = ", state.userID)
         const url = API_URL + "/friends/add"
