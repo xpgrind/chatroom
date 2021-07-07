@@ -1,8 +1,38 @@
 <template>
     <div id="chat">
-        <button @click="loadFriendList">Hello</button>
-        <div v-for="friend in friendList" :key="friend">{{friend}}</div>
-    </div>
+        <h2>Welcome,   {{ username }}   !</h2>
+        <!-- <div class="box"></div> -->
+            <button @click="loadFriends()">Load Friendslist</button>
+            <p>Friends:
+            <span v-for="friend in friendList" :key="friend">
+                {{ friend }}
+            </span>
+            </p>
+            <h5>Input his/her username: <input type="text" v-model="friend1"></h5>
+            <button @click="addFriend()" >Add Friend</button>
+            <p :style="color1">{{ message1 }}</p>
+            <h5>Delete this person: <input type="text" v-model="friend2"></h5>
+            <button @click="clearFriend()">Delete Friend</button>
+            <p :style="color2">{{ message2 }}</p>
+            <div>
+             <input v-model="message">
+            To:
+            <input v-model="friend3">
+            </div>
+            <button @click="send()">Send</button>
+            <div>
+            <button @click="get()">Get</button>
+
+            <span v-for="msg in message3" :key="msg">
+                {{ msg }}
+            </span>
+
+            <button @click="logout()">Log Out</button>
+            </div>
+            <router-link to="/profile">
+                Profile Page
+            </router-link>
+        </div>
 </template>
 
 <script>
@@ -12,21 +42,191 @@ const logger = Logger.get("actions.js")
 
 export default {
     name: 'Chat',
+
     data () {
+        const prevQuery = this.$route.query
         return {
-            title: 'Chat'
-        }
-    },
-    methods: {
-        loadFriendList() {
-            logger.debug("Getting user list")
-            this.$store.dispatch("loadFriendList")
+            title: 'Chat',
+            friend1: '',
+            friend2: '',
+            friend3: '',
+            message: '',
+            message1: '',
+            message2: '',
+            color1: '',
+            color2: '',
+            see: false,
+            redirect: prevQuery.redirect ? prevQuery.redirect : "/",
         }
     },
     computed: {
         friendList() {
             return this.$store.state.friends
+        },
+
+        username() {
+            return this.$store.state.username
+        },
+
+        message3() {
+            return this.$store.state.messages
+        },
+
+        // photo() {
+        //     return '/' + this.$store.state.photo
+        // }
+    },
+
+    methods: {
+        send() {
+            console.log("Sending a message " + this.message)
+            this.$store
+                .dispatch("sendMsg", {newMsg: this.message, receiver: this.friend3})
+                .then(
+                    (json) => {
+                        logger.debug("success, got json:", json)
+                    },
+                    (error) => {
+                        logger.warn("Failed", error, "response", error.response)
+                    }
+                )
+        },
+
+        get() {
+            console.log("Getting Messages ")
+            this.$store.dispatch("loadMsg")
+        },
+
+        clearFriend() {
+            console.log("Adding a friend " + this.friend2)
+            this.$store
+                .dispatch("deleteFriend", {
+                    friend: this.friend2,
+                })
+                .then(
+                    (json) => {
+                        logger.debug("deleteFriend success, got json:", json)
+                        this.color2 = "color:purple"
+                        this.message2 = "Deleting Friend Succeeded !"
+                    },
+                    (error) => {
+                        logger.warn("addFriend Failed", error, "response", error.response)
+                        this.message2 = '' + error.response.data.message
+                        this.color2 = "color:red"
+                    }
+                )
+        },
+
+        addFriend() {
+            console.log("Adding a friend " + this.friend1)
+            this.$store
+                .dispatch("addFriend", {
+                    newFriend: this.friend1,
+                })
+                .then(
+                    (json) => {
+                        logger.debug("addFriend success, got json:", json)
+                        this.color1 = "color:purple"
+                        this.message1 = "Adding Friend Succeeded !"
+                    },
+                    (error) => {
+                        logger.warn("addFriend Failed", error, "response", error.response)
+                        this.message1 = '' + error.response.data.message
+                        this.color1 = "color:red"
+                    }
+                )
+        },
+
+        loadFriends() {
+            console.log("Loading friends List ")
+            this.see = true
+            this.$store.dispatch("loadFriendList")
+        },
+
+        logout() {
+            console.log("Logging out")
+            this.$store.dispatch("clearLogin")
+            this.$router.push({ path: this.redirect })
         }
     }
 }
 </script>
+
+<style scooped>
+img{
+    position: absolute;
+    left: 450px;
+    top:0px;
+}
+span{
+    margin-left: 30px;
+}
+
+.a {
+    position: relative;
+    left: 600px;
+    top:100px;
+}
+.c{
+    position: absolute;
+    left: 600px;
+    top:180px;
+}
+
+.e{
+    position: absolute;
+    bottom: 100px;
+    left: 580px;
+}
+
+h2, h5{
+    color:rgb(53, 255, 255);
+}
+
+div{
+    margin-top: 15px;
+}
+
+.box{
+    height: 100px;
+    width: 100px;
+    right: 130px;
+    position: absolute;
+}
+
+.box::after{
+    border-radius: 10px;
+    background: url("../../static/en.png");
+    animation: rotate .5s linear infinite;
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80px;
+    height: 80px;
+}
+
+@keyframes shadow {
+    0%, 100% {transform: scaleX(1);}
+    50% {transform: scaleX(1.2);}
+}
+
+@keyframes rotate {
+    0% {
+    transform: translateY(0) ;
+  }
+    25% {
+        transform: translateY(10px);
+    }
+    50% {
+        transform: translateY(20px) scale(1.1, 0.9);
+
+    }
+    75% {
+        ransform: translateY(10px) ;
+    }
+    100% {
+        transform: translateY(0) ;
+    }
+}
+</style>

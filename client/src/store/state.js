@@ -1,8 +1,21 @@
 // tslint:disable:max-line-length
+function loadUserID() {
+    const userIDStr = window.localStorage.getItem("chatroom_user_id")
+    if (userIDStr === null || userIDStr === undefined) {
+        return null
+    }
+    const parsedUserID = parseInt(userIDStr)
+    if (isNaN(parseInt(parsedUserID))) {
+        return null
+    }
+    return parsedUserID
+}
 
 export default {
-    username: window.localStorage.getItem("chatroom_username") || null,
+    username: '',
+    friends: [],
+    messages: [],
     token: window.localStorage.getItem("chatroom_token") || null,
-    friends: null,
-    email: window.localStorage.getItem("email") || null
+    userID: loadUserID(),
+    photo: ''
 }

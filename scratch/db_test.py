@@ -1,18 +1,11 @@
 import os
 import sys
 from sqlalchemy.orm import relationship
-
 from chatroom.db.session import get_session
-from chatroom.db.tables import Account
+from chatroom.db.tables import Message
 
 session = get_session()
-print("Removing topher")
-topher_user = session.query(Account).filter_by(username='topher').first()
-session.delete(topher_user)
-session.commit()
+topher_user = session.query(Message).filter_by(receiver_id='2').all()
 
-session = get_session()
-print("Adding topher")
-new_topher = Account(username='topher', description="a silly cat")
-session.add(new_topher)
-session.commit()
+for i in topher_user:
+    print(i.message)

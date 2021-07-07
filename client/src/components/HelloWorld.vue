@@ -1,6 +1,5 @@
 <template>
     <div class="hello">
-        <h1 style="text-align:center;background-color:purple">{{ msg }}</h1>
         <h2>Essential Links</h2>
         <router-link to="/login"><a class="hover">Login</a></router-link>
         &nbsp;&nbsp;

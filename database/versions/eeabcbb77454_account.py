@@ -1,7 +1,7 @@
 """create account table
 
 Revision ID: eeabcbb77454
-Revises: 3f1b1367e94d
+Revises: None
 Create Date: 2019-01-17 20:57:42.955640
 
 """
@@ -21,10 +21,9 @@ def upgrade():
         'account',
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('username', sa.String(50), nullable=False, unique=True),
-        sa.Column('password_hash', sa.Unicode(128)),
+        sa.Column('password_hash', sa.Unicode(128), nullable=False),
         sa.Column('email', sa.String(80), nullable=False, unique=True)
     )
-
 
 def downgrade():
     op.drop_table('account')
